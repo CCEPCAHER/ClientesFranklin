@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. DATOS DE CLIENTES ---
     const clientes = [
-        // ... (los datos de clientes permanecen sin cambios)
+        // ... (tus datos de clientes aquí)
         { "codigo": "8103539", "plan": "CAT21", "cadena": "Condis", "nombre": "De Catalunya, 24", "poblacion": "Aiguafreda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
         { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Crta. Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
         { "codigo": "8106896", "plan": "CAT21", "cadena": "Esclat", "nombre": "Crta. C-17, km 54,5", "poblacion": "Malla", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
@@ -165,8 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalClientCount = document.getElementById('modal-client-count');
     const diasNav = document.getElementById('dias-nav');
     const searchResultInfo = document.getElementById('search-result-info');
-    const createMapBtn = document.getElementById('create-map-btn');
-    const generateLinkBtn = document.getElementById('generate-link-btn');
+    const viewOnMapBtn = document.getElementById('view-on-map-btn');
 
     // --- 3. ESTADO DE LA APLICACIÓN ---
     const selectedClients = new Set();
@@ -190,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 5. LÓGICA PARA VISTA DE RUTAS DIARIAS (CON CARRUSEL) ---
+    // --- 5. LÓGICA PARA VISTA DE RUTAS DIARIAS ---
     function initializeDailyRoutes() {
         const diasSemana = { 'L': 'Lunes', 'M': 'Martes', 'X': 'Miércoles', 'J': 'Jueves', 'V': 'Viernes', 'S': 'Sábado' };
         const rutasPorDia = {};
@@ -347,24 +346,56 @@ document.addEventListener('DOMContentLoaded', () => {
         noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
         clientesAMostrar.forEach(cliente => {
             const isSelected = selectedClients.has(cliente.codigo);
-            const line = document.createElement('label');
+            const line = document.createElement('div');
             line.className = 'client-line';
             line.classList.toggle('selected', isSelected);
-            line.htmlFor = `check-${cliente.codigo}`;
+    
+            const fullAddress = `${cliente.nombre}, ${cliente.poblacion}`;
+            const encodedAddress = encodeURIComponent(fullAddress);
+            const mapsUrl = `http://googleusercontent.com/maps.google.com/6{encodedAddress}`;
+    
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
+            
             line.innerHTML = `
-                <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
-                <div class="client-info">
-                    <strong>${cliente.codigo}</strong> ${cliente.cadena} - ${cliente.nombre}, <em>${cliente.poblacion}</em>
-                </div>
+                <label class="checkbox-container" for="check-${cliente.codigo}">
+                    <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
+                </label>
+                <a href="${mapsUrl}" target="_blank" class="client-info-link" title="Ver ${cliente.nombre} en Google Maps">
+                    <div class="client-info">
+                        <strong>${cliente.cadena} (${cliente.codigo})</strong>
+                        <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
+                    </div>
+                </a>
                 <span class="client-medalla medalla-${medallaClass}">${cliente.medalla}</span>
             `;
-            line.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
-                const codigo = e.target.dataset.codigo;
-                e.target.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
-                line.classList.toggle('selected', e.target.checked);
+    
+            const checkboxContainer = line.querySelector('.checkbox-container');
+            if(checkboxContainer) {
+                checkboxContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const checkbox = line.querySelector('input[type="checkbox"]');
+                    const codigo = checkbox.dataset.codigo;
+                    if (e.target.nodeName !== 'INPUT') {
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
+                    line.classList.toggle('selected', checkbox.checked);
+                    updateSelectionUI();
+                });
+            }
+
+            line.addEventListener('click', (e) => {
+                if (e.target.closest('.client-info-link') || e.target.closest('.checkbox-container')) {
+                    return;
+                }
+                const checkbox = line.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                const codigo = checkbox.dataset.codigo;
+                checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
+                line.classList.toggle('selected', checkbox.checked);
                 updateSelectionUI();
             });
+    
             clientList.appendChild(line);
         });
         currentFilteredClients = clientesAMostrar;
@@ -376,9 +407,13 @@ document.addEventListener('DOMContentLoaded', () => {
         clientCount.textContent = `(${selectedCount} sel.) | Mostrando ${currentFilteredClients.length} de ${clientes.length}`;
         const hasSelection = selectedCount > 0;
         
-        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, createMapBtn].forEach(btn => {
+        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, viewOnMapBtn].forEach(btn => {
             if (btn) btn.disabled = !hasSelection;
         });
+
+        if (viewOnMapBtn) {
+            viewOnMapBtn.disabled = selectedCount === 0;
+        }
 
         if (currentFilteredClients.length > 0) {
             const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
@@ -391,8 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aplicarFiltros() {
-        searchResultInfo.classList.add('hidden');
-        rutaFilter.classList.remove('highlight-select');
+        if(searchResultInfo) searchResultInfo.classList.add('hidden');
+        if(rutaFilter) rutaFilter.classList.remove('highlight-select');
         if(diasFilterContainer) {
             diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
         }
@@ -413,13 +448,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay;
         });
         
-        if (clientesFiltrados.length === 1 && searchTerm.length > 2) {
+        if (clientesFiltrados.length === 1 && searchTerm) {
             const clienteUnico = clientesFiltrados[0];
             const rutaCliente = clienteUnico.plan;
 
             searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
             searchResultInfo.classList.remove('hidden');
-
             rutaFilter.value = rutaCliente;
             rutaFilter.classList.add('highlight-select');
             
@@ -450,7 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rutaSeleccionada) {
             const dias = ['L', 'M', 'X', 'J', 'V', 'S'];
             const label = document.createElement('span');
-            label.textContent = "Día de visita:";
+            label.textContent = "Filtrar por día:";
+            label.style.fontWeight = 'bold';
             diasFilterContainer.appendChild(label);
             dias.forEach(dia => {
                 const btn = document.createElement('button');
@@ -489,11 +524,9 @@ document.addEventListener('DOMContentLoaded', () => {
         sortSelect.selectedIndex = 0;
         activeDayFilter = null;
         selectedClients.clear();
-        
         history.pushState(null, '', window.location.pathname);
-
-        gestionarFiltroDias(); 
-        aplicarFiltros(); 
+        gestionarFiltroDias();
+        aplicarFiltros();
     }
 
     function exportar(type, targetButton = null) {
@@ -531,97 +564,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. FUNCIONES DE MAPAS Y ENLACES ---
-    function crearMapa() {
+    function viewSelectedOnMap() {
         if (selectedClients.size === 0) return;
+    
+        const MAX_WAYPOINTS = 25; // Límite generoso de Google Maps para waypoints en la URL
+        let clientsToMap = Array.from(selectedClients).map(codigo => clientes.find(c => c.codigo === codigo));
+    
+        if (clientsToMap.length > MAX_WAYPOINTS) {
+            alert(`Puedes visualizar un máximo de ${MAX_WAYPOINTS} clientes a la vez. Se mostrarán los primeros ${MAX_WAYPOINTS} de tu selección.`);
+            clientsToMap = clientsToMap.slice(0, MAX_WAYPOINTS);
+        }
+    
+        // Limpia el nombre del cliente para mejorar la búsqueda en mapas
+        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre.replace(/·/g, ' ')}, ${cliente.poblacion}`);
+    
+        // Todos los clientes seleccionados serán los destinos ("waypoints")
+        const waypoints = clientsToMap.map(formatAddress).join('|');
+    
+        // La URL se construye con la base, el origen como "My Location" y los destinos
+        const mapsUrl = `http://googleusercontent.com/maps.google.com/33{waypoints}`;
         
-        let clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
-        const MAX_STOPS = 10;
-
-        // Limpia el nombre del cliente para mejorar el geocoding
-        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre.replace(/·/g, ' ')}, ${cliente.poblacion}, Spain`);
-
-        // Si se seleccionan más clientes del límite, informar al usuario y cortar la lista
-        if (clientsToMap.length > MAX_STOPS) {
-            alert(`Has seleccionado ${clientsToMap.length} clientes. Google Maps solo puede mostrar una ruta con un máximo de ${MAX_STOPS} paradas.\n\nSe mostrará la ruta para los primeros ${MAX_STOPS} clientes de tu selección.`);
-            clientsToMap = clientsToMap.slice(0, MAX_STOPS);
-        }
-
-        // Si solo hay un cliente, hacer una búsqueda simple
-        if (clientsToMap.length === 1) {
-            const url = `http://googleusercontent.com/maps.google.com/6{formatAddress(clientsToMap[0])}`;
-            window.open(url, '_blank');
-            return;
-        }
-
-        // Construir la URL para una ruta con origen, destino y paradas intermedias
-        const base = "https://www.google.com/maps/dir/?api=1";
-        const origin = `&origin=${formatAddress(clientsToMap[0])}`;
-        const destination = `&destination=${formatAddress(clientsToMap[clientsToMap.length - 1])}`;
-        
-        let waypoints = '';
-        if (clientsToMap.length > 2) {
-            waypoints = '&waypoints=' + clientsToMap.slice(1, -1).map(formatAddress).join('|');
-        }
-
-        const url = `${base}${origin}${destination}${waypoints}&travelmode=driving`;
-        window.open(url, '_blank');
+        window.open(mapsUrl, '_blank');
     }
-
-    function generarEnlace(e) {
-        const params = new URLSearchParams();
-        
-        if (searchBox.value) params.set('q', searchBox.value);
-        if (rutaFilter.value) params.set('ruta', rutaFilter.value);
-        if (cadenaFilter.value) params.set('cadena', cadenaFilter.value);
-        if (medallaFilter.value) params.set('medalla', medallaFilter.value);
-        if (sortSelect.value !== 'codigo-asc') params.set('sort', sortSelect.value);
-        if (activeDayFilter) params.set('dia', activeDayFilter);
-
-        const link = `${window.location.protocol}//${window.location.host}${window.location.pathname}?${params.toString()}`;
-
-        navigator.clipboard.writeText(link).then(() => {
-            const targetButton = e.currentTarget;
-            if (targetButton) {
-                const originalText = targetButton.title;
-                const originalIcon = targetButton.innerHTML;
-                targetButton.innerHTML = '¡Copiado!';
-                targetButton.disabled = true;
-                setTimeout(() => {
-                    targetButton.innerHTML = originalIcon;
-                    targetButton.title = originalText;
-                    targetButton.disabled = false;
-                }, 2000);
-            }
-        }).catch(err => console.error('Error al copiar enlace: ', err));
-    }
-
-    function aplicarFiltrosDesdeURL() {
-        const params = new URLSearchParams(window.location.search);
-        
-        searchBox.value = params.get('q') || '';
-        rutaFilter.value = params.get('ruta') || '';
-        cadenaFilter.value = params.get('cadena') || '';
-        medallaFilter.value = params.get('medalla') || '';
-        sortSelect.value = params.get('sort') || 'codigo-asc';
-        
-        if (rutaFilter.value) {
-            gestionarFiltroDias();
-            const diaParam = params.get('dia');
-            if (diaParam) {
-                const diaBtn = diasFilterContainer.querySelector(`.dia-btn[data-day="${diaParam}"]`);
-                if (diaBtn) {
-                    activeDayFilter = diaParam;
-                    diaBtn.classList.add('active');
-                }
-            }
-        }
-    }
-
-    // --- 8. INICIALIZACIÓN DE LA APLICACIÓN ---
+    
+    // --- 7. INICIALIZACIÓN DE LA APLICACIÓN ---
     function init() {
         const rutas = [...new Set(clientes.map(c => c.plan))].sort();
-        const cadenas = [...new Set(clientes.map(c => c.cadena))].sort((a, b) => a.localeCompare(b));
+        const cadenas = [...new Set(clientes.map(c => c.cadena))].sort();
         const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
         rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
         cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
@@ -629,8 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
-
-        aplicarFiltrosDesdeURL();
+        
         aplicarFiltros();
         initializeDailyRoutes();
 
@@ -646,6 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
         selectAllCheckbox.addEventListener('change', (e) => {
+            const checkboxes = clientList.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
             currentFilteredClients.forEach(cliente => {
                 e.target.checked ? selectedClients.add(cliente.codigo) : selectedClients.delete(cliente.codigo);
             });
@@ -664,15 +636,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resetBtn.addEventListener('click', limpiarFiltros);
         
-        previewSelectionBtn.addEventListener('click', openPreviewModal);
-        exportPdfBtn.addEventListener('click', () => exportar('pdf'));
-        exportExcelBtn.addEventListener('click', (e) => exportar('excel', e.currentTarget));
-        copySelectionBtn.addEventListener('click', (e) => exportar('copy', e.currentTarget));
-        
-        if(createMapBtn) createMapBtn.addEventListener('click', crearMapa);
-        if(generateLinkBtn) generateLinkBtn.addEventListener('click', generarEnlace);
+        if (previewSelectionBtn) previewSelectionBtn.addEventListener('click', openPreviewModal);
+        if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => exportar('pdf'));
+        if (exportExcelBtn) exportExcelBtn.addEventListener('click', (e) => exportar('excel', e.currentTarget));
+        if (copySelectionBtn) copySelectionBtn.addEventListener('click', (e) => exportar('copy', e.currentTarget));
+        if (viewOnMapBtn) viewOnMapBtn.addEventListener('click', viewSelectedOnMap);
 
-        closeModalBtn.addEventListener('click', closePreviewModal);
+        if(closeModalBtn) closeModalBtn.addEventListener('click', closePreviewModal);
         if(previewModal) previewModal.addEventListener('click', (e) => {
             if (e.target === previewModal) closePreviewModal();
         });
