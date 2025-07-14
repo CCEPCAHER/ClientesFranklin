@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
             const cleanAddress = getCleanAddressForMap(cliente);
             const encodedAddress = encodeURIComponent(`${cleanAddress}, Spain`);
-            const mapsUrl = `https://www.google.com/maps/dir/lat1,lon1/lat2,lon2/lat3,lon30${encodedAddress}`;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
     
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
             
@@ -597,8 +597,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return encodeURIComponent(`${cleanAddress}, Spain`);
         };
         
-        const locationsString = clients.map(formatAddress).join('/');
-        const mapsUrl = `https://www.google.com/maps/dir/lat1,lon1/lat2,lon2/lat3,lon35`;
+        const locationsPath = clients.map(formatAddress).join('/');
+const mapsUrl = `https://www.google.com/maps/dir/${locationsPath}`;
         
         window.open(mapsUrl, '_blank');
     }
