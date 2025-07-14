@@ -535,15 +535,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function crearMapa() {
         if (selectedClients.size === 0) return;
         
-        const clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
-        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre}, ${cliente.poblacion}, Spain`);
+        let clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
+        const MAX_STOPS = 10;
 
+        // Limpia el nombre del cliente para mejorar el geocoding
+        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre.replace(/·/g, ' ')}, ${cliente.poblacion}, Spain`);
+
+        // Si se seleccionan más clientes del límite, informar al usuario y cortar la lista
+        if (clientsToMap.length > MAX_STOPS) {
+            alert(`Has seleccionado ${clientsToMap.length} clientes. Google Maps solo puede mostrar una ruta con un máximo de ${MAX_STOPS} paradas.\n\nSe mostrará la ruta para los primeros ${MAX_STOPS} clientes de tu selección.`);
+            clientsToMap = clientsToMap.slice(0, MAX_STOPS);
+        }
+
+        // Si solo hay un cliente, hacer una búsqueda simple
         if (clientsToMap.length === 1) {
-            const url = `https://www.google.com/maps/search/?api=1&query=$${formatAddress(clientsToMap[0])}`;
+            const url = `http://googleusercontent.com/maps.google.com/6{formatAddress(clientsToMap[0])}`;
             window.open(url, '_blank');
             return;
         }
 
+        // Construir la URL para una ruta con origen, destino y paradas intermedias
         const base = "https://www.google.com/maps/dir/?api=1";
         const origin = `&origin=${formatAddress(clientsToMap[0])}`;
         const destination = `&destination=${formatAddress(clientsToMap[clientsToMap.length - 1])}`;
