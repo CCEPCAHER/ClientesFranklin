@@ -48,6 +48,12 @@
                         <option value="cadena-asc">Ordenar por Cadena (A-Z)</option>
                     </select>
                     <div class="export-buttons">
+                        <button id="view-on-map-btn" class="button-icon" title="Ver seleccionados en el mapa" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                                <path d="M10.5 3.75a6 6 0 00-5.98 6.496A5.25 5.25 0 006.75 20.25H18a4.5 4.5 0 002.206-8.423 3.75 3.75 0 00-4.133-4.303A6.001 6.001 0 0010.5 3.75z"/>
+                                <path d="M12 15a.75.75 0 00.75-.75V9a.75.75 0 00-1.5 0v5.25a.75.75 0 00.75.75z"/>
+                            </svg>
+                        </button>
                         <button id="preview-selection-btn" title="Ver la selección actual" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.816 1.123-2.024 2.11-3.356 2.784C10.082 11.532 8.642 12.5 8 12.5c-1.72 0-3.324-1.008-4.668-2.216A13.133 13.133 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
                         </button>
@@ -66,8 +72,10 @@
 
             <div class="list-container">
                 <div class="list-header">
-                    <input type="checkbox" id="select-all-checkbox" title="Seleccionar todos los clientes visibles">
-                    <label for="select-all-checkbox">Seleccionar Todos</label>
+                    <label class="select-all-label">
+                        <input type="checkbox" id="select-all-checkbox" title="Seleccionar todos los clientes visibles">
+                        <span>Seleccionar Todos</span>
+                    </label>
                 </div>
                 <div id="client-list" class="list-view"></div>
             </div>
