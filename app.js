@@ -179,10 +179,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFilteredClients = [];
     let activeDayFilter = null;
     let currentView = 'filters';
-    let currentDailyClients = []; // Nuevo estado para los clientes de la vista diaria
-    let activeDay = 'Lunes'; // Nuevo estado para saber el día activo
+    let currentDailyClients = [];
+    let activeDay = 'Lunes';
 
-    // --- 4. LÓGICA DE CAMBIO DE VISTA ---
+    // --- 4. FUNCIONES AUXILIARES ---
+
+    function getCleanAddressForMap(cliente) {
+        let address = cliente.nombre;
+    
+        if (address.includes('·')) {
+            address = address.split('·')[1];
+        }
+    
+        address = address.split(' - ')[0];
+        address = address.replace(/\s*\(.*\)/, '');
+        
+        return `${address.trim()}, ${cliente.poblacion}`;
+    }
+
+    // --- 5. LÓGICA DE CAMBIO DE VISTA ---
     function setView(viewName) {
         currentView = viewName;
         if (viewName === 'filters') {
@@ -195,10 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleViewBtn.textContent = '‹ Volver al Filtro';
             filterView.classList.add('hidden');
             dailyRoutesView.classList.remove('hidden');
+            initializeDailyRoutes();
         }
     }
 
-    // --- 5. LÓGICA PARA VISTA DE RUTAS DIARIAS ---
+    // --- 6. LÓGICA PARA VISTA DE RUTAS DIARIAS ---
     function initializeDailyRoutes() {
         const diasSemana = { 'L': 'Lunes', 'M': 'Martes', 'X': 'Miércoles', 'J': 'Jueves', 'V': 'Viernes', 'S': 'Sábado' };
         const rutasPorDia = {};
@@ -246,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeDay = nombreDia;
             diasNav.querySelectorAll('.dia-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.dia === nombreDia));
             rutasContent.innerHTML = '';
-            currentDailyClients = []; // Limpiar lista de clientes del día
+            currentDailyClients = [];
 
             const rutasDelDia = rutasPorDia[nombreDia];
             const planesOrdenados = Object.keys(rutasDelDia).sort();
@@ -262,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             planesOrdenados.forEach(plan => {
                 const clientesDelPlan = rutasDelDia[plan];
-                currentDailyClients.push(...clientesDelPlan); // Añadir a la lista del día
+                currentDailyClients.push(...clientesDelPlan);
                 
                 const rutaCard = document.createElement('div');
                 rutaCard.className = 'ruta-card';
@@ -330,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateDayCarouselButtons, 100);
     }
     
-    // --- 6. LÓGICA PARA VISTA DE FILTROS ---
+    // --- 7. LÓGICA PARA VISTA DE FILTROS ---
     const applyTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
         if (themeToggle) {
@@ -365,9 +381,9 @@ document.addEventListener('DOMContentLoaded', () => {
             line.className = 'client-line';
             line.classList.toggle('selected', isSelected);
     
-            const fullAddress = `${cliente.nombre}, ${cliente.poblacion}, Spain`;
-            const encodedAddress = encodeURIComponent(fullAddress);
-            const mapsUrl = `http://googleusercontent.com/maps.google.com/6{encodedAddress}`;
+            const cleanAddress = getCleanAddressForMap(cliente);
+            const encodedAddress = encodeURIComponent(`${cleanAddress}, Spain`);
+            const mapsUrl = `https://www.google.com/maps/dir/lat1,lon1/lat2,lon2/lat3,lon30${encodedAddress}`;
     
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
             
@@ -375,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label class="checkbox-container" for="check-${cliente.codigo}">
                     <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
                 </label>
-                <a href="${mapsUrl}" target="_blank" class="client-info-link" title="Ver ${cliente.nombre} en Google Maps">
+                <a href="${mapsUrl}" target="_blank" class="client-info-link" title="Ver en Google Maps: ${cleanAddress}">
                     <div class="client-info">
                         <strong>${cliente.cadena} (${cliente.codigo})</strong>
                         <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
@@ -422,13 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
         clientCount.textContent = `(${selectedCount} sel.) | Mostrando ${currentFilteredClients.length} de ${clientes.length}`;
         const hasSelection = selectedCount > 0;
         
-        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn].forEach(btn => {
+        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, createMapBtn].forEach(btn => {
             if (btn) btn.disabled = !hasSelection;
         });
-
-        if (createMapBtn) {
-            createMapBtn.disabled = !hasSelection;
-        }
 
         if (currentFilteredClients.length > 0) {
             const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
@@ -580,9 +592,13 @@ document.addEventListener('DOMContentLoaded', () => {
             clients = clients.slice(0, MAX_WAYPOINTS);
         }
     
-        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre.replace(/·/g, ' ')}, ${cliente.poblacion}`);
-        const waypoints = clients.map(formatAddress).join('|');
-        const mapsUrl = `http://googleusercontent.com/maps.google.com/33{waypoints}`;
+        const formatAddress = (cliente) => {
+            const cleanAddress = getCleanAddressForMap(cliente);
+            return encodeURIComponent(`${cleanAddress}, Spain`);
+        };
+        
+        const locationsString = clients.map(formatAddress).join('/');
+        const mapsUrl = `https://www.google.com/maps/dir/lat1,lon1/lat2,lon2/lat3,lon35`;
         
         window.open(mapsUrl, '_blank');
     }
@@ -651,7 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Aplicar filtros de URL y luego renderizar todo
         aplicarFiltrosDesdeURL();
         aplicarFiltros();
-        initializeDailyRoutes();
 
         // Asignar todos los event listeners
         toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
