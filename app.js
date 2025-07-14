@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. DATOS DE CLIENTES ---
     const clientes = [
+        // ... (los datos de clientes permanecen sin cambios)
         { "codigo": "8103539", "plan": "CAT21", "cadena": "Condis", "nombre": "De Catalunya, 24", "poblacion": "Aiguafreda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
         { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Crta. Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
         { "codigo": "8106896", "plan": "CAT21", "cadena": "Esclat", "nombre": "Crta. C-17, km 54,5", "poblacion": "Malla", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
@@ -164,6 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalClientCount = document.getElementById('modal-client-count');
     const diasNav = document.getElementById('dias-nav');
     const searchResultInfo = document.getElementById('search-result-info');
+    const createMapBtn = document.getElementById('create-map-btn');
+    const generateLinkBtn = document.getElementById('generate-link-btn');
 
     // --- 3. ESTADO DE LA APLICACIÓN ---
     const selectedClients = new Set();
@@ -224,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const routeCardBtnRight = document.getElementById('route-card-btn-right');
 
         function updateRouteCarouselButtons() {
-            if (!rutasContent) return;
+            if (!rutasContent || !routeCardBtnLeft || !routeCardBtnRight) return;
             const scrollLeft = Math.round(rutasContent.scrollLeft);
             const maxScrollLeft = rutasContent.scrollWidth - rutasContent.clientWidth;
             routeCardBtnLeft.disabled = scrollLeft <= 1;
@@ -240,10 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (planesOrdenados.length === 0) {
                 rutasContent.innerHTML = '<p class="no-rutas">🏖️ No hay rutas asignadas para este día.</p>';
-                routeCardCarouselWrapper.classList.add('hidden');
+                if (routeCardCarouselWrapper) routeCardCarouselWrapper.classList.add('hidden');
                 return;
             }
-            routeCardCarouselWrapper.classList.remove('hidden');
+            if(routeCardCarouselWrapper) routeCardCarouselWrapper.classList.remove('hidden');
 
             planesOrdenados.forEach(plan => {
                 const clientesDelPlan = rutasDelDia[plan];
@@ -255,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const clientListUl = document.createElement('ul');
                 clientesDelPlan.sort((a,b) => a.codigo.localeCompare(b.codigo)).forEach(cliente => {
                     const clientLi = document.createElement('li');
-                    const medallaClass = (cliente.medalla || 'default').toLowerCase().split(' ')[0];
+                    const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
                     clientLi.innerHTML = `
                         <span class="client-code">${cliente.codigo}</span>
                         <div class="client-details"><strong>${cliente.cadena}</strong> - ${cliente.nombre}, <em>${cliente.poblacion}</em></div>
@@ -271,38 +274,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         function updateDayCarouselButtons() {
+            if (!dayCarouselBtnLeft || !dayCarouselBtnRight) return;
             const scrollLeft = Math.round(diasNav.scrollLeft);
             const maxScrollLeft = diasNav.scrollWidth - diasNav.clientWidth;
             dayCarouselBtnLeft.disabled = scrollLeft <= 1;
             dayCarouselBtnRight.disabled = scrollLeft >= maxScrollLeft - 1;
         }
 
-        dayCarouselBtnLeft.addEventListener('click', () => { diasNav.scrollBy({ left: -250, behavior: 'smooth' }); });
-        dayCarouselBtnRight.addEventListener('click', () => { diasNav.scrollBy({ left: 250, behavior: 'smooth' }); });
+        if(dayCarouselBtnLeft) dayCarouselBtnLeft.addEventListener('click', () => { diasNav.scrollBy({ left: -250, behavior: 'smooth' }); });
+        if(dayCarouselBtnRight) dayCarouselBtnRight.addEventListener('click', () => { diasNav.scrollBy({ left: 250, behavior: 'smooth' }); });
         
         let dayScrollTimeout;
-        diasNav.addEventListener('scroll', () => {
+        if(diasNav) diasNav.addEventListener('scroll', () => {
             clearTimeout(dayScrollTimeout);
             dayScrollTimeout = setTimeout(updateDayCarouselButtons, 150);
         });
         
-        routeCardBtnLeft.addEventListener('click', () => {
+        if(routeCardBtnLeft) routeCardBtnLeft.addEventListener('click', () => {
             const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
             rutasContent.scrollBy({ left: -(cardWidth + 15), behavior: 'smooth' });
         });
 
-        routeCardBtnRight.addEventListener('click', () => {
+        if(routeCardBtnRight) routeCardBtnRight.addEventListener('click', () => {
             const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
             rutasContent.scrollBy({ left: cardWidth + 15, behavior: 'smooth' });
         });
         
         let routeScrollTimeout;
-        rutasContent.addEventListener('scroll', () => {
+        if(rutasContent) rutasContent.addEventListener('scroll', () => {
             clearTimeout(routeScrollTimeout);
             routeScrollTimeout = setTimeout(updateRouteCarouselButtons, 150);
         });
 
-        diasNav.addEventListener('click', e => {
+        if(diasNav) diasNav.addEventListener('click', e => {
             if (e.target.classList.contains('dia-nav-btn')) {
                 mostrarRutasDelDia(e.target.dataset.dia);
             }
@@ -313,7 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- 6. LÓGICA PARA VISTA DE FILTROS ---
-    const applyTheme = (theme) => document.body.classList.toggle('dark-mode', theme === 'dark');
+    const applyTheme = (theme) => {
+        document.body.classList.toggle('dark-mode', theme === 'dark');
+        if (themeToggle) {
+            themeToggle.querySelector('.sun').style.display = theme === 'dark' ? 'none' : 'block';
+            themeToggle.querySelector('.moon').style.display = theme === 'dark' ? 'block' : 'none';
+        }
+    };
     
     function openPreviewModal() {
         if (selectedClients.size === 0) return;
@@ -332,23 +342,20 @@ document.addEventListener('DOMContentLoaded', () => {
         previewModal.classList.add('hidden');
     }
 
-    // --- FUNCIÓN CORREGIDA ---
     function mostrarClientes(clientesAMostrar) {
         clientList.innerHTML = '';
         noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
         clientesAMostrar.forEach(cliente => {
-            // CORRECCIÓN 1: La variable es 'cliente', no 'c'.
             const isSelected = selectedClients.has(cliente.codigo);
             const line = document.createElement('label');
             line.className = 'client-line';
             line.classList.toggle('selected', isSelected);
             line.htmlFor = `check-${cliente.codigo}`;
-            // CORRECCIÓN 2: Se define 'medallaClass' que faltaba.
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
             line.innerHTML = `
                 <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
                 <div class="client-info">
-                    ${cliente.codigo} ${cliente.cadena} - ${cliente.nombre}, ${cliente.poblacion}
+                    <strong>${cliente.codigo}</strong> ${cliente.cadena} - ${cliente.nombre}, <em>${cliente.poblacion}</em>
                 </div>
                 <span class="client-medalla medalla-${medallaClass}">${cliente.medalla}</span>
             `;
@@ -368,10 +375,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCount = selectedClients.size;
         clientCount.textContent = `(${selectedCount} sel.) | Mostrando ${currentFilteredClients.length} de ${clientes.length}`;
         const hasSelection = selectedCount > 0;
-        previewSelectionBtn.disabled = !hasSelection;
-        exportPdfBtn.disabled = !hasSelection;
-        exportExcelBtn.disabled = !hasSelection;
-        copySelectionBtn.disabled = !hasSelection;
+        
+        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, createMapBtn].forEach(btn => {
+            if (btn) btn.disabled = !hasSelection;
+        });
+
         if (currentFilteredClients.length > 0) {
             const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
             selectAllCheckbox.checked = allVisibleSelected;
@@ -383,7 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aplicarFiltros() {
-        // Reseteamos los resaltados automáticos en cada nuevo filtro.
         searchResultInfo.classList.add('hidden');
         rutaFilter.classList.remove('highlight-select');
         if(diasFilterContainer) {
@@ -406,23 +413,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay;
         });
         
-        // Si después de todos los filtros, el resultado es UN solo cliente Y se usó la búsqueda...
-        if (clientesFiltrados.length === 1 && searchTerm) {
+        if (clientesFiltrados.length === 1 && searchTerm.length > 2) {
             const clienteUnico = clientesFiltrados[0];
             const rutaCliente = clienteUnico.plan;
 
-            // 1. Mostramos el mensaje informativo
             searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
             searchResultInfo.classList.remove('hidden');
 
-            // 2. Seleccionamos y resaltamos el filtro de ruta
             rutaFilter.value = rutaCliente;
             rutaFilter.classList.add('highlight-select');
             
-            // 3. Mostramos los botones de los días para esa ruta
             gestionarFiltroDias();
 
-            // 4. Resaltamos los días de visita de ese cliente
             const diasVisita = [...new Set(clienteUnico.diaVisita.match(/[LMXJVS]/g) || [])];
             diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
                 if (diasVisita.includes(btn.dataset.day)) {
@@ -448,8 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rutaSeleccionada) {
             const dias = ['L', 'M', 'X', 'J', 'V', 'S'];
             const label = document.createElement('span');
-            label.textContent = "Filtrar por día:";
-            label.style.fontWeight = 'bold';
+            label.textContent = "Día de visita:";
             diasFilterContainer.appendChild(label);
             dias.forEach(dia => {
                 const btn = document.createElement('button');
@@ -462,10 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             diasFilterContainer.classList.remove('hidden');
         } else {
-            if (activeDayFilter) {
-                activeDayFilter = null;
-                // No es necesario llamar a aplicarFiltros aquí, se controla desde el evento change
-            }
+            activeDayFilter = null;
         }
     }
 
@@ -491,8 +489,11 @@ document.addEventListener('DOMContentLoaded', () => {
         sortSelect.selectedIndex = 0;
         activeDayFilter = null;
         selectedClients.clear();
-        gestionarFiltroDias(); // Esto ocultará el filtro de días
-        aplicarFiltros(); // Esto aplicará los filtros limpios y quitará los resaltados
+        
+        history.pushState(null, '', window.location.pathname);
+
+        gestionarFiltroDias(); 
+        aplicarFiltros(); 
     }
 
     function exportar(type, targetButton = null) {
@@ -530,16 +531,106 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 7. INICIALIZACIÓN DE LA APLICACIÓN ---
+    // --- 7. FUNCIONES DE MAPAS Y ENLACES ---
+    function crearMapa() {
+        if (selectedClients.size === 0) return;
+        
+        const clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
+        const formatAddress = (cliente) => encodeURIComponent(`${cliente.nombre}, ${cliente.poblacion}, Spain`);
+
+        if (clientsToMap.length === 1) {
+            const url = `https://www.google.com/maps/search/?api=1&query=$${formatAddress(clientsToMap[0])}`;
+            window.open(url, '_blank');
+            return;
+        }
+
+        const base = "https://www.google.com/maps/dir/?api=1";
+        const origin = `&origin=${formatAddress(clientsToMap[0])}`;
+        const destination = `&destination=${formatAddress(clientsToMap[clientsToMap.length - 1])}`;
+        
+        let waypoints = '';
+        if (clientsToMap.length > 2) {
+            waypoints = '&waypoints=' + clientsToMap.slice(1, -1).map(formatAddress).join('|');
+        }
+
+        const url = `${base}${origin}${destination}${waypoints}&travelmode=driving`;
+        window.open(url, '_blank');
+    }
+
+    function generarEnlace(e) {
+        const params = new URLSearchParams();
+        
+        if (searchBox.value) params.set('q', searchBox.value);
+        if (rutaFilter.value) params.set('ruta', rutaFilter.value);
+        if (cadenaFilter.value) params.set('cadena', cadenaFilter.value);
+        if (medallaFilter.value) params.set('medalla', medallaFilter.value);
+        if (sortSelect.value !== 'codigo-asc') params.set('sort', sortSelect.value);
+        if (activeDayFilter) params.set('dia', activeDayFilter);
+
+        const link = `${window.location.protocol}//${window.location.host}${window.location.pathname}?${params.toString()}`;
+
+        navigator.clipboard.writeText(link).then(() => {
+            const targetButton = e.currentTarget;
+            if (targetButton) {
+                const originalText = targetButton.title;
+                const originalIcon = targetButton.innerHTML;
+                targetButton.innerHTML = '¡Copiado!';
+                targetButton.disabled = true;
+                setTimeout(() => {
+                    targetButton.innerHTML = originalIcon;
+                    targetButton.title = originalText;
+                    targetButton.disabled = false;
+                }, 2000);
+            }
+        }).catch(err => console.error('Error al copiar enlace: ', err));
+    }
+
+    function aplicarFiltrosDesdeURL() {
+        const params = new URLSearchParams(window.location.search);
+        
+        searchBox.value = params.get('q') || '';
+        rutaFilter.value = params.get('ruta') || '';
+        cadenaFilter.value = params.get('cadena') || '';
+        medallaFilter.value = params.get('medalla') || '';
+        sortSelect.value = params.get('sort') || 'codigo-asc';
+        
+        if (rutaFilter.value) {
+            gestionarFiltroDias();
+            const diaParam = params.get('dia');
+            if (diaParam) {
+                const diaBtn = diasFilterContainer.querySelector(`.dia-btn[data-day="${diaParam}"]`);
+                if (diaBtn) {
+                    activeDayFilter = diaParam;
+                    diaBtn.classList.add('active');
+                }
+            }
+        }
+    }
+
+    // --- 8. INICIALIZACIÓN DE LA APLICACIÓN ---
     function init() {
-        toggleViewBtn.addEventListener('click', () => {
-            setView(currentView === 'filters' ? 'daily' : 'filters');
-        });
+        const rutas = [...new Set(clientes.map(c => c.plan))].sort();
+        const cadenas = [...new Set(clientes.map(c => c.cadena))].sort((a, b) => a.localeCompare(b));
+        const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
+        rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
+        cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
+        medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
+        
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(savedTheme);
+
+        aplicarFiltrosDesdeURL();
+        aplicarFiltros();
+        initializeDailyRoutes();
+
+        toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
+        
         themeToggle.addEventListener('click', () => {
             const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         });
+        
         window.addEventListener('scroll', () => scrollToTopBtn.classList.toggle('hidden', window.scrollY <= 300));
         scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
@@ -549,38 +640,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             mostrarClientes(currentFilteredClients);
         });
-        [searchBox, cadenaFilter, medallaFilter, sortSelect].forEach(el => el.addEventListener('input', aplicarFiltros));
         
-        rutaFilter.addEventListener('change', () => {
-            // Cuando el usuario cambia la ruta manualmente, se quita el filtro de día si lo hubiera.
-            activeDayFilter = null; 
-            gestionarFiltroDias();
-            aplicarFiltros();
+        [searchBox, rutaFilter, cadenaFilter, medallaFilter, sortSelect].forEach(el => {
+            el.addEventListener('input', () => {
+                if (el.id === 'ruta-filter') {
+                    activeDayFilter = null; 
+                    gestionarFiltroDias();
+                }
+                aplicarFiltros();
+            });
         });
 
         resetBtn.addEventListener('click', limpiarFiltros);
+        
         previewSelectionBtn.addEventListener('click', openPreviewModal);
         exportPdfBtn.addEventListener('click', () => exportar('pdf'));
-        exportExcelBtn.addEventListener('click', () => exportar('excel'));
+        exportExcelBtn.addEventListener('click', (e) => exportar('excel', e.currentTarget));
         copySelectionBtn.addEventListener('click', (e) => exportar('copy', e.currentTarget));
+        
+        if(createMapBtn) createMapBtn.addEventListener('click', crearMapa);
+        if(generateLinkBtn) generateLinkBtn.addEventListener('click', generarEnlace);
+
         closeModalBtn.addEventListener('click', closePreviewModal);
-        previewModal.addEventListener('click', (e) => {
+        if(previewModal) previewModal.addEventListener('click', (e) => {
             if (e.target === previewModal) closePreviewModal();
         });
-
-        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        applyTheme(savedTheme);
-        
-        const rutas = [...new Set(clientes.map(c => c.plan))].sort();
-        const cadenas = [...new Set(clientes.map(c => c.cadena))].sort();
-        const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
-        rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
-        cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
-        medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
-
-        initializeDailyRoutes();
-        
-        aplicarFiltros();
     }
 
     init();
