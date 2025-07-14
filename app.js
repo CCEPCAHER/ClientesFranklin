@@ -562,7 +562,12 @@ document.addEventListener('DOMContentLoaded', () => {
             XLSX.writeFile(workbook, `${filename}.xlsx`);
         } else if (type === 'copy') {
             const textToCopy = clients.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}`).join('\n');
-            navigator.clipboard.writeText(textToCopy).then(() => alert('¡Copiado al portapapeles!'));
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const button = document.getElementById('copy-selection-btn');
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<span>¡Copiado!</span>';
+                setTimeout(() => button.innerHTML = originalContent, 2000);
+            });
         }
     }
     
@@ -571,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
         const MAX_WAYPOINTS = 25; 
         if (clients.length > MAX_WAYPOINTS) {
-            alert(`Puedes visualizar un máximo de ${MAX_WAYPOINTS} clientes a la vez.`);
+            alert(`Puedes visualizar un máximo de ${MAX_WAYPOINTS} clientes a la vez. Se mostrarán los primeros ${MAX_WAYPOINTS} de tu selección.`);
             clients = clients.slice(0, MAX_WAYPOINTS);
         }
     
@@ -631,6 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 8. INICIALIZACIÓN DE LA APLICACIÓN ---
     function init() {
+        // Llenar los selects
         const rutas = [...new Set(clientes.map(c => c.plan))].sort();
         const cadenas = [...new Set(clientes.map(c => c.cadena))].sort();
         const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
@@ -638,13 +644,16 @@ document.addEventListener('DOMContentLoaded', () => {
         cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
         medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
         
+        // Configurar tema inicial
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
         
+        // Aplicar filtros de URL y luego renderizar todo
         aplicarFiltrosDesdeURL();
         aplicarFiltros();
         initializeDailyRoutes();
 
+        // Asignar todos los event listeners
         toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
         
         themeToggle.addEventListener('click', () => {
@@ -653,18 +662,20 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTheme(newTheme);
         });
         
-        window.addEventListener('scroll', () => scrollToTopBtn.classList.toggle('hidden', window.scrollY <= 300));
-        scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        window.addEventListener('scroll', () => {
+            if(scrollToTopBtn) scrollToTopBtn.classList.toggle('hidden', window.scrollY <= 300)
+        });
+        if(scrollToTopBtn) scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
         selectAllCheckbox.addEventListener('change', (e) => {
             currentFilteredClients.forEach(cliente => {
-                selectedClients.has(cliente.codigo) ? selectedClients.delete(cliente.codigo) : selectedClients.add(cliente.codigo);
+                e.target.checked ? selectedClients.add(cliente.codigo) : selectedClients.delete(cliente.codigo);
             });
-            mostrarClientes(currentFilteredClients); // Re-render to show visual changes
+            mostrarClientes(currentFilteredClients);
         });
         
         [searchBox, rutaFilter, cadenaFilter, medallaFilter, sortSelect].forEach(el => {
-            el.addEventListener('input', () => {
+            if(el) el.addEventListener('input', () => {
                 if (el.id === 'ruta-filter') {
                     activeDayFilter = null; 
                     gestionarFiltroDias();
@@ -673,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        resetBtn.addEventListener('click', limpiarFiltros);
+        if(resetBtn) resetBtn.addEventListener('click', limpiarFiltros);
         
         if (previewSelectionBtn) previewSelectionBtn.addEventListener('click', openPreviewModal);
         if (copySelectionBtn) copySelectionBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'copy'));
@@ -683,7 +694,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (createMapBtn) createMapBtn.addEventListener('click', () => crearMapa(clientes.filter(c => selectedClients.has(c.codigo))));
         if (generateLinkBtn) generateLinkBtn.addEventListener('click', generarEnlace);
         
-        // Listeners para la vista diaria
         if(createMapDayBtn) createMapDayBtn.addEventListener('click', () => crearMapa(currentDailyClients));
         if(exportPdfDayBtn) exportPdfDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'pdf', `Plan_del_${activeDay}`));
         if(exportExcelDayBtn) exportExcelDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'excel', `Plan_del_${activeDay}`));
