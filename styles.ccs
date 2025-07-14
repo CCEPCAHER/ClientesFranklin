@@ -1,0 +1,409 @@
+/* --- 1. VARIABLES Y CONFIGURACIÓN GLOBAL --- */
+:root {
+    /* Paleta de Colores */
+    --clr-primary-400: #007bff;
+    --clr-primary-500: #0056b3;
+    --clr-light-100: #ffffff;
+    --clr-light-200: #f8f9fa;
+    --clr-dark-800: #343a40;
+    --clr-dark-900: #1c1c1e;
+    --clr-text-light: #f1f1f1;
+    --clr-text-dark: #212529;
+    --clr-border: #dee2e6;
+    --clr-shadow: rgba(0, 0, 0, 0.1);
+
+    /* Medallas */
+    --clr-platino: #e5e4e2;
+    --clr-oro: #ffd700;
+    --clr-plata: #c0c0c0;
+    --clr-bronce: #cd7f32;
+
+    /* Tipografía */
+    --ff-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --fs-base: 1rem;
+    --fs-sm: 0.875rem;
+    --fs-lg: 1.25rem;
+    --fs-xl: 1.75rem;
+
+    /* Otros */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* --- Tema Oscuro --- */
+body.dark-mode {
+    --clr-light-100: #1c1c1e;
+    --clr-light-200: #2a2a2e;
+    --clr-dark-800: #f8f9fa;
+    --clr-dark-900: #ffffff;
+    --clr-text-light: #1c1c1e;
+    --clr-text-dark: #f1f1f1;
+    --clr-border: #3a3a3c;
+    --clr-shadow: rgba(255, 255, 255, 0.1);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--ff-sans);
+    font-size: var(--fs-base);
+    background-color: var(--clr-light-100);
+    color: var(--clr-text-dark);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+    -webkit-tap-highlight-color: transparent; /* Mejora experiencia táctil */
+}
+
+main {
+    padding: 1rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- 2. COMPONENTES PRINCIPALES --- */
+
+/* Cabecera */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(90deg, var(--clr-primary-400), #00aaff);
+    color: var(--clr-light-100);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+header h1 {
+    font-size: var(--fs-lg);
+}
+
+/* Botones, Inputs y Selects */
+button, select, input {
+    font-family: inherit;
+    font-size: var(--fs-base);
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--clr-border);
+    background-color: var(--clr-light-100);
+    color: var(--clr-text-dark);
+    transition: all var(--transition-speed) ease;
+}
+
+button {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.view-routes-btn {
+    background-color: var(--clr-light-100);
+    color: var(--clr-primary-400);
+    border: none;
+    box-shadow: 0 0 0 2px var(--clr-primary-400) inset;
+}
+
+/* --- 3. VISTA DE FILTROS --- */
+.filter-container {
+    display: grid;
+    gap: 0.75rem;
+    margin-block: 1.5rem;
+}
+
+.actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background-color: var(--clr-light-200);
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+}
+
+.export-buttons button, #preview-selection-btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+}
+.export-buttons button svg, #preview-selection-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--clr-text-dark);
+}
+
+#theme-toggle {
+    background: none; border: none; cursor: pointer;
+}
+.moon { display: none; }
+.dark-mode .sun { display: none; }
+.dark-mode .moon { display: inline-block; }
+
+/* Lista de Clientes (Vista 1) */
+.client-line {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--clr-border);
+}
+.client-line.selected {
+    background-color: #e6f2ff;
+}
+.dark-mode .client-line.selected {
+    background-color: #002c5c;
+}
+.client-medalla {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+}
+.medalla-platino { background-color: var(--clr-platino); color: var(--clr-text-light); }
+.medalla-oro { background-color: var(--clr-oro); color: var(--clr-text-light); }
+.medalla-plata { background-color: var(--clr-plata); color: var(--clr-text-light); }
+.medalla-bronce { background-color: var(--clr-bronce); color: var(--clr-light-100); }
+/* Estilo para el botón de día "resaltado" automáticamente */
+.dia-btn.highlight {
+    background-color: #fff3cd; /* Un amarillo pálido para la sugerencia */
+    color: #664d03;
+    border: 1px solid #ffc107;
+    font-weight: bold;
+    transform: scale(1.05); /* Lo hacemos un poco más grande para que destaque */
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+}
+
+.dark-mode .dia-btn.highlight {
+    background-color: #533f0c;
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+/* También es bueno estilizar el contenedor de los botones de día */
+.dias-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: var(--clr-light-200);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+}
+.dia-btn {
+    border: 1px solid var(--clr-border);
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.dia-btn.active {
+    background-color: var(--clr-primary-400);
+    color: white;
+    border-color: var(--clr-primary-400);
+}
+
+
+
+/* --- 4. VISTA DE RUTAS DIARIAS (PANTALLA 2) --- */
+
+/* Carrusel de Días */
+.dias-carousel-container {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--clr-light-100);
+    padding-block: 0.5rem;
+    box-shadow: 0 2px 5px var(--clr-shadow);
+}
+.dias-nav {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+.dias-nav::-webkit-scrollbar { display: none; }
+
+.dia-nav-btn {
+    padding: 0.75rem 1.25rem;
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: #888;
+    position: relative;
+}
+.dia-nav-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background-color: var(--clr-primary-400);
+    transition: width var(--transition-speed) ease;
+}
+.dia-nav-btn.active {
+    color: var(--clr-primary-400);
+}
+.dia-nav-btn.active::after {
+    width: 50%;
+}
+
+.carousel-btn {
+    display: none; /* Ocultamos los botones, la experiencia táctil es mejor */
+}
+
+/* Carrusel de Tarjetas de Ruta */
+.route-card-carousel-wrapper {
+    width: 100vw;
+    margin-left: -1rem; /* Compensa el padding del main para ser 100% ancho */
+    padding-top: 1rem;
+}
+.rutas-content {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+    padding-inline: 1rem; /* Padding para ver la siguiente tarjeta */
+    scrollbar-width: none;
+}
+.rutas-content::-webkit-scrollbar { display: none; }
+
+/* Tarjeta de Ruta Individual */
+.ruta-card {
+    flex: 0 0 90%; /* Ocupa 90% para mostrar un trozo de la siguiente */
+    scroll-snap-align: start; /* Se alinea al inicio */
+    background-color: var(--clr-light-200);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px var(--clr-shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.ruta-card h3 {
+    padding: 1rem 1.25rem;
+    background-color: var(--clr-dark-800);
+    color: var(--clr-text-light);
+    font-size: var(--fs-lg);
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+.dark-mode .ruta-card h3 {
+    background-color: #444;
+    color: var(--clr-text-dark);
+}
+
+.ruta-card ul {
+    list-style: none;
+}
+
+.ruta-card li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+}
+.ruta-card li:nth-child(odd) {
+    background-color: rgba(0,0,0,0.02); /* Zebra striping sutil */
+}
+.dark-mode .ruta-card li:nth-child(odd) {
+    background-color: rgba(255,255,255,0.03);
+}
+
+.ruta-card .client-code {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--clr-primary-400);
+    font-size: 1.1em;
+}
+
+/* Ya no necesita scroll, el texto se parte de forma natural */
+.ruta-card .client-details {
+    line-height: 1.4;
+}
+
+/* --- 5. MODALES Y OTROS --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.6);
+    display: grid;
+    place-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: var(--clr-light-100);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#scroll-to-top {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background-color: var(--clr-primary-400);
+    color: var(--clr-light-100);
+    border: none;
+    z-index: 999;
+}
+
+/* --- 6. MEDIA QUERIES PARA PANTALLAS GRANDES --- */
+@media (min-width: 768px) {
+    .carousel-btn {
+        display: block; /* Muestra los botones en escritorio */
+    }
+    .filter-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    .ruta-card {
+        flex-basis: 400px; /* Ancho fijo en pantallas grandes */
+    }
+    .route-card-carousel-wrapper {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+/* --- Estilos para la información de búsqueda y selector resaltado --- */
+
+.search-result-info {
+    padding: 1rem;
+    margin-block: 1.5rem;
+    background-color: #e6f7ff; /* Un azul muy claro para la información */
+    border-left: 5px solid var(--clr-primary-400);
+    border-radius: var(--border-radius);
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.dark-mode .search-result-info {
+    background-color: #003352;
+    border-left-color: #00aaff;
+}
+
+/* Estilo para resaltar el <select> de la ruta */
+select.highlight-select {
+    border-color: var(--clr-primary-400);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+}
+
