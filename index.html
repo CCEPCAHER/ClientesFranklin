@@ -7,127 +7,154 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
     
     <link rel="stylesheet" href="styles.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-    <header>
-        <h1 id="main-title">Rutas zona Franklin</h1>
-        <div class="header-actions">
-            <button type="button" id="toggle-view-btn" class="view-routes-btn">Ver Rutas Diarias</button>
-            <button type="button" id="theme-toggle" class="button-icon" title="Cambiar tema">
-                <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>
-                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>
-            </button>
-        </div>
-    </header>
+<header>
+    <h1 id="main-title">Rutas zona Franklin</h1>
+    <div class="header-actions">
+        <button type="button" id="toggle-view-btn" class="view-routes-btn">Ver Rutas Diarias</button>
+        <button type="button" id="theme-toggle" class="button-icon" title="Cambiar tema">
+            <svg class="sun" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>
+            <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>
+        </button>
+    </div>
+</header>
 
-    <main>
-        <div id="filter-view">
-            <p class="view-description">Busca, filtra, ordena y exporta tu listado de clientes.</p>
-            
-            <div id="client-summary-bar">
-                <div id="client-count"></div>
-            </div>
-
-            <form class="filter-container" onsubmit="return false;">
-                <input type="text" id="search-box" placeholder="Buscar por código, nombre, ruta...">
-                <select id="ruta-filter"><option value="">Todas las Rutas</option></select>
-                <select id="cadena-filter"><option value="">Todas las Cadenas</option></select>
-                <select id="medalla-filter"><option value="">Todas las Medallas</option></select>
-                <button type="button" id="reset-btn" title="Limpiar todos los filtros">Limpiar</button>
-            </form>
-
-            <div id="dias-filter-container" class="dias-container hidden"></div>
-            <div id="search-result-info" class="search-result-info hidden"></div>
-
-            <div class="actions-bar">
-                <div class="action-group">
-                    <select id="sort-select">
-                        <option value="codigo-asc">Ordenar por Código</option>
-                        <option value="nombre-asc">Ordenar por Nombre</option>
-                        <option value="cadena-asc">Ordenar por Cadena</option>
-                    </select>
-                    
-                    <button type="button" id="create-map-btn" class="action-btn btn-map" title="Crear mapa con selección" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>Mapa</span>
-                    </button>
-                    <button type="button" id="preview-selection-btn" class="action-btn btn-view" title="Ver la selección actual" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>Ver</span>
-                    </button>
-                    <button type="button" id="copy-selection-btn" class="action-btn btn-copy" title="Copiar selección" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                        <span>Copiar</span>
-                    </button>
-                    <button type="button" id="export-pdf-btn" class="action-btn btn-pdf" title="Exportar a PDF" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 15.5v-5"/><path d="m12 10.5-2 2.5-2-2.5"/></svg>
-                        <span>PDF</span>
-                    </button>
-                    <button type="button" id="export-excel-btn" class="action-btn btn-excel" title="Exportar a Excel" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
-                        <span>Excel</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="list-container">
-                <div class="list-header">
-                    <label>
-                        <input type="checkbox" id="select-all-checkbox" title="Seleccionar todos los clientes visibles">
-                        <span>Seleccionar Visibles</span>
-                    </label>
-                </div>
-                <div id="client-list"></div>
-            </div>
-
-            <div id="no-results" class="hidden">
-                <p>😕 No se encontraron clientes que coincidan con los filtros seleccionados.</p>
-            </div>
+<main>
+    <div id="filter-view">
+        <p class="view-description">Busca, filtra, ordena y exporta tu listado de clientes.</p>
+        
+        <div id="client-summary-bar">
+            <div id="client-count"></div>
         </div>
 
-        <div id="daily-routes-view" class="hidden">
-            <div class="carousel-wrapper">
-                <button type="button" id="day-carousel-btn-left" class="carousel-btn" title="Día anterior">‹</button>
-                <nav id="dias-nav"></nav>
-                <button type="button" id="day-carousel-btn-right" class="carousel-btn" title="Día siguiente">›</button>
-            </div>
-            
-            <div id="actions-bar-daily" class="actions-bar hidden">
-                <div id="client-count-daily"></div>
-                <div class="action-group">
-                    <button type="button" id="export-excel-day-btn" class="action-btn btn-excel" title="Exportar plan del día a Excel">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
-                        <span>Exportar Excel</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div id="route-card-carousel-wrapper" class="carousel-wrapper">
-                <button type="button" id="route-card-btn-left" class="carousel-btn" title="Ruta anterior">‹</button>
-                <div id="rutas-content" class="rutas-content"></div>
-                <button type="button" id="route-card-btn-right" class="carousel-btn" title="Ruta siguiente">›</button>
-            </div>
-        </div>
-    </main>
+        <form class="filter-container" onsubmit="return false;">
+            <input type="text" id="search-box" placeholder="Buscar por código, nombre, ruta...">
+            <select id="ruta-filter"><option value="">Todas las Rutas</option></select>
+            <select id="cadena-filter"><option value="">Todas las Cadenas</option></select>
+            <select id="medalla-filter"><option value="">Todas las Medallas</option></select>
+            <button type="button" id="reset-btn" title="Limpiar todos los filtros">Limpiar</button>
+        </form>
 
-    <button type="button" id="scroll-to-top" class="hidden" title="Volver arriba">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.28 9.57a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" /></svg>
-    </button>
+        <div id="dias-filter-container" class="dias-container hidden"></div>
+        <div id="search-result-info" class="search-result-info hidden"></div>
+
+        <div class="actions-bar">
+            <!-- BLOQUE REEMPLAZADO -->
+            <div class="action-group">
+                <select id="sort-select">
+                    <option value="codigo-asc">Ordenar por Código</option>
+                    <option value="nombre-asc">Ordenar por Nombre</option>
+                    <option value="cadena-asc">Ordenar por Cadena</option>
+                </select>
+                
+                <a href="#" id="create-map-btn" class="action-btn btn-map disabled" title="Navegar con selección" target="_blank" rel="noopener noreferrer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>Navegar</span>
+                </a>
     
-    <div id="preview-modal" class="hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Selección Actual</h2>
-                <button type="button" id="close-modal-btn" title="Cerrar">×</button>
+                <button type="button" id="open-map-btn" class="action-btn btn-map" title="Ver en mapa" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>Mapa</span>
+                </button>
+                
+                <button type="button" id="preview-selection-btn" class="action-btn btn-view" title="Ver la selección actual" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Ver</span>
+                </button>
+                
+                <button type="button" id="copy-selection-btn" class="action-btn btn-copy" title="Copiar selección" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>Copiar</span>
+                </button>
+                
+                <button type="button" id="export-pdf-btn" class="action-btn btn-pdf" title="Exportar a PDF" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 15.5v-5"/><path d="m12 10.5-2 2.5-2-2.5"/></svg>
+                    <span>PDF</span>
+                </button>
+                
+                <button type="button" id="export-excel-btn" class="action-btn btn-excel" title="Exportar a Excel" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+                    <span>Excel</span>
+                </button>
             </div>
-            <div id="modal-client-list" class="modal-body"></div>
-            <div id="modal-client-count" class="modal-footer"></div>
+        </div>
+
+        <div class="list-container">
+            <div class="list-header">
+                <label>
+                    <input type="checkbox" id="select-all-checkbox" title="Seleccionar todos los clientes visibles">
+                    <span>Seleccionar Visibles</span>
+                </label>
+            </div>
+            <div id="client-list"></div>
+        </div>
+
+        <div id="no-results" class="hidden">
+            <p>😕 No se encontraron clientes que coincidan con los filtros seleccionados.</p>
         </div>
     </div>
-    
-    <script src="app.js"></script>
+
+    <div id="daily-routes-view" class="hidden">
+        <div class="carousel-wrapper">
+            <button type="button" id="day-carousel-btn-left" class="carousel-btn" title="Día anterior">‹</button>
+            <nav id="dias-nav"></nav>
+            <button type="button" id="day-carousel-btn-right" class="carousel-btn" title="Día siguiente">›</button>
+        </div>
+        
+        <div id="actions-bar-daily" class="actions-bar hidden">
+            <div id="client-count-daily"></div>
+            <div class="action-group">
+                <button type="button" id="export-excel-day-btn" class="action-btn btn-excel" title="Exportar plan del día a Excel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+                    <span>Exportar Excel</span>
+                </button>
+            </div>
+        </div>
+        
+        <div id="route-card-carousel-wrapper" class="carousel-wrapper">
+            <button type="button" id="route-card-btn-left" class="carousel-btn" title="Ruta anterior">‹</button>
+            <div id="rutas-content" class="rutas-content"></div>
+            <button type="button" id="route-card-btn-right" class="carousel-btn" title="Ruta siguiente">›</button>
+        </div>
+    </div>
+</main>
+
+<button type="button" id="scroll-to-top" class="hidden" title="Volver arriba">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.28 9.57a.75.75 0 01-1.06-1.06l5.25-5.25a.75.75 0 011.06 0l5.25 5.25a.75.75 0 11-1.06 1.06L10.75 5.612V16.25A.75.75 0 0110 17z" clip-rule="evenodd" /></svg>
+</button>
+
+<div id="preview-modal" class="hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Selección Actual</h2>
+            <button type="button" id="close-modal-btn" title="Cerrar">×</button>
+        </div>
+        <div id="modal-client-list" class="modal-body"></div>
+        <div id="modal-client-count" class="modal-footer"></div>
+    </div>
+</div>
+
+<div id="map-modal" class="hidden">
+    <div class="modal-content-map">
+        <div class="modal-header">
+            <h2>Vista de Mapa</h2>
+            <button type="button" id="close-map-modal-btn" title="Cerrar">×</button>
+        </div>
+        <div class="modal-body-map">
+            <div id="map-container"></div>
+            <div id="route-details">Cargando...</div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
