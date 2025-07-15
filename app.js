@@ -165,12 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const diasNav = document.getElementById('dias-nav');
     const searchResultInfo = document.getElementById('search-result-info');
     const createMapBtn = document.getElementById('create-map-btn');
-    const generateLinkBtn = document.getElementById('generate-link-btn');
 
     // Referencias para la vista diaria
     const clientCountDaily = document.getElementById('client-count-daily');
-    const createMapDayBtn = document.getElementById('create-map-day-btn');
-    const exportPdfDayBtn = document.getElementById('export-pdf-day-btn');
     const exportExcelDayBtn = document.getElementById('export-excel-day-btn');
     const actionsBarDaily = document.getElementById('actions-bar-daily');
 
@@ -383,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
             const cleanAddress = getCleanAddressForMap(cliente);
             const encodedAddress = encodeURIComponent(`${cleanAddress}, Spain`);
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodedAddress}`;
     
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
             
@@ -449,6 +446,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             selectAllCheckbox.checked = false;
             selectAllCheckbox.indeterminate = false;
+        }
+
+        // **AÑADIDO**: Cambiar el estilo del botón Limpiar si hay selección
+        if (resetBtn) {
+            resetBtn.classList.toggle('active-reset', hasSelection);
         }
     }
 
@@ -598,34 +600,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         const locationsPath = clients.map(formatAddress).join('/');
-const mapsUrl = `https://www.google.com/maps/dir/${locationsPath}`;
+        const mapsUrl = `https://www.google.com/maps/dir/$${locationsPath}`;
         
         window.open(mapsUrl, '_blank');
-    }
-    
-    function generarEnlace(e) {
-        const params = new URLSearchParams();
-        
-        if (searchBox.value) params.set('q', searchBox.value);
-        if (rutaFilter.value) params.set('ruta', rutaFilter.value);
-        if (cadenaFilter.value) params.set('cadena', cadenaFilter.value);
-        if (medallaFilter.value) params.set('medalla', medallaFilter.value);
-        if (sortSelect.value !== 'codigo-asc') params.set('sort', sortSelect.value);
-        if (activeDayFilter) params.set('dia', activeDayFilter);
-
-        const link = `${window.location.protocol}//${window.location.host}${window.location.pathname}?${params.toString()}`;
-        navigator.clipboard.writeText(link).then(() => {
-            const targetButton = e.currentTarget;
-            if (targetButton) {
-                const originalIcon = targetButton.innerHTML;
-                targetButton.innerHTML = '<span>¡URL Copiada!</span>';
-                targetButton.disabled = true;
-                setTimeout(() => {
-                    targetButton.innerHTML = originalIcon;
-                    targetButton.disabled = false;
-                }, 2000);
-            }
-        });
     }
 
     function aplicarFiltrosDesdeURL() {
@@ -707,10 +684,7 @@ const mapsUrl = `https://www.google.com/maps/dir/${locationsPath}`;
         if (exportExcelBtn) exportExcelBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'excel', 'Seleccion_Clientes'));
         
         if (createMapBtn) createMapBtn.addEventListener('click', () => crearMapa(clientes.filter(c => selectedClients.has(c.codigo))));
-        if (generateLinkBtn) generateLinkBtn.addEventListener('click', generarEnlace);
         
-        if(createMapDayBtn) createMapDayBtn.addEventListener('click', () => crearMapa(currentDailyClients));
-        if(exportPdfDayBtn) exportPdfDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'pdf', `Plan_del_${activeDay}`));
         if(exportExcelDayBtn) exportExcelDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'excel', `Plan_del_${activeDay}`));
 
         if(closeModalBtn) closeModalBtn.addEventListener('click', closePreviewModal);
