@@ -165,11 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const diasNav = document.getElementById('dias-nav');
     const searchResultInfo = document.getElementById('search-result-info');
     const createMapBtn = document.getElementById('create-map-btn');
-
-    // Referencias para la vista diaria
     const clientCountDaily = document.getElementById('client-count-daily');
     const exportExcelDayBtn = document.getElementById('export-excel-day-btn');
     const actionsBarDaily = document.getElementById('actions-bar-daily');
+    
+    // Referencias para el modal del mapa
+    const mapModal = document.getElementById('map-modal');
+    const openMapBtn = document.getElementById('open-map-btn');
+    const closeMapModalBtn = document.getElementById('close-map-modal-btn');
+    const routeDetails = document.getElementById('route-details');
 
     // --- 3. ESTADO DE LA APLICACIÓN ---
     const selectedClients = new Set();
@@ -178,23 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentView = 'filters';
     let currentDailyClients = [];
     let activeDay = 'Lunes';
-
-    // --- 4. FUNCIONES AUXILIARES ---
+    
+    // --- 4. FUNCIONES ---
 
     function getCleanAddressForMap(cliente) {
         let address = cliente.nombre;
-    
         if (address.includes('·')) {
             address = address.split('·')[1];
         }
-    
         address = address.split(' - ')[0];
         address = address.replace(/\s*\(.*\)/, '');
-        
         return `${address.trim()}, ${cliente.poblacion}`;
     }
 
-    // --- 5. LÓGICA DE CAMBIO DE VISTA ---
     function setView(viewName) {
         currentView = viewName;
         if (viewName === 'filters') {
@@ -211,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 6. LÓGICA PARA VISTA DE RUTAS DIARIAS ---
     function initializeDailyRoutes() {
         const diasSemana = { 'L': 'Lunes', 'M': 'Martes', 'X': 'Miércoles', 'J': 'Jueves', 'V': 'Viernes', 'S': 'Sábado' };
         const rutasPorDia = {};
@@ -230,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        if (diasNav.children.length === 0) {
+        if (diasNav && diasNav.children.length === 0) {
             Object.values(diasSemana).forEach(nombreDia => {
                 const btn = document.createElement('button');
                 btn.className = 'dia-nav-btn';
@@ -257,21 +256,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function mostrarRutasDelDia(nombreDia) {
             activeDay = nombreDia;
-            diasNav.querySelectorAll('.dia-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.dia === nombreDia));
-            rutasContent.innerHTML = '';
+            if (diasNav) {
+                diasNav.querySelectorAll('.dia-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.dia === nombreDia));
+            }
+            if (rutasContent) rutasContent.innerHTML = '';
             currentDailyClients = [];
 
             const rutasDelDia = rutasPorDia[nombreDia];
             const planesOrdenados = Object.keys(rutasDelDia).sort();
 
             if (planesOrdenados.length === 0) {
-                rutasContent.innerHTML = '<p class="no-rutas">🏖️ No hay rutas asignadas para este día.</p>';
+                if (rutasContent) rutasContent.innerHTML = '<p class="no-rutas">🏖️ No hay rutas asignadas para este día.</p>';
                 if (routeCardCarouselWrapper) routeCardCarouselWrapper.classList.add('hidden');
-                actionsBarDaily.classList.add('hidden');
+                if (actionsBarDaily) actionsBarDaily.classList.add('hidden');
                 return;
             }
             if(routeCardCarouselWrapper) routeCardCarouselWrapper.classList.remove('hidden');
-            actionsBarDaily.classList.remove('hidden');
+            if(actionsBarDaily) actionsBarDaily.classList.remove('hidden');
             
             planesOrdenados.forEach(plan => {
                 const clientesDelPlan = rutasDelDia[plan];
@@ -294,15 +295,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     clientListUl.appendChild(clientLi);
                 });
                 rutaCard.appendChild(clientListUl);
-                rutasContent.appendChild(rutaCard);
+                if (rutasContent) rutasContent.appendChild(rutaCard);
             });
             
-            clientCountDaily.textContent = `${currentDailyClients.length} clientes en el plan de hoy.`;
+            if (clientCountDaily) clientCountDaily.textContent = `${currentDailyClients.length} clientes en el plan de hoy.`;
             setTimeout(updateRouteCarouselButtons, 100);
         }
         
         function updateDayCarouselButtons() {
-            if (!dayCarouselBtnLeft || !dayCarouselBtnRight) return;
+            if (!diasNav || !dayCarouselBtnLeft || !dayCarouselBtnRight) return;
             const scrollLeft = Math.round(diasNav.scrollLeft);
             const maxScrollLeft = diasNav.scrollWidth - diasNav.clientWidth;
             dayCarouselBtnLeft.disabled = scrollLeft <= 1;
@@ -319,10 +320,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         if(routeCardBtnLeft) routeCardBtnLeft.addEventListener('click', () => {
+            if (!rutasContent) return;
             const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
             rutasContent.scrollBy({ left: -(cardWidth + 15), behavior: 'smooth' });
         });
         if(routeCardBtnRight) routeCardBtnRight.addEventListener('click', () => {
+            if (!rutasContent) return;
             const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
             rutasContent.scrollBy({ left: cardWidth + 15, behavior: 'smooth' });
         });
@@ -343,44 +346,42 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateDayCarouselButtons, 100);
     }
     
-    // --- 7. LÓGICA PARA VISTA DE FILTROS ---
     const applyTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
         if (themeToggle) {
-            themeToggle.querySelector('.sun').style.display = theme === 'dark' ? 'none' : 'block';
-            themeToggle.querySelector('.moon').style.display = theme === 'dark' ? 'block' : 'none';
+            const sunIcon = themeToggle.querySelector('.sun');
+            const moonIcon = themeToggle.querySelector('.moon');
+            if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
+            if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
         }
     };
     
     function openPreviewModal() {
         if (selectedClients.size === 0) return;
         const clientsToShow = clientes.filter(c => selectedClients.has(c.codigo));
-        modalClientList.innerHTML = '';
+        if (modalClientList) modalClientList.innerHTML = '';
         clientsToShow.forEach(cliente => {
             const clientElement = document.createElement('p');
             clientElement.textContent = `${cliente.codigo} ${cliente.cadena} (${cliente.medalla}) - ${cliente.nombre}, ${cliente.poblacion}`;
-            modalClientList.appendChild(clientElement);
+            if (modalClientList) modalClientList.appendChild(clientElement);
         });
-        modalClientCount.textContent = `Total: ${clientsToShow.length} clientes seleccionados`;
-        previewModal.classList.remove('hidden');
+        if (modalClientCount) modalClientCount.textContent = `Total: ${clientsToShow.length} clientes seleccionados`;
+        if (previewModal) previewModal.classList.remove('hidden');
     }
 
     function closePreviewModal() {
-        previewModal.classList.add('hidden');
+        if (previewModal) previewModal.classList.add('hidden');
     }
 
     function mostrarClientes(clientesAMostrar) {
-        clientList.innerHTML = '';
-        noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+        if (clientList) clientList.innerHTML = '';
+        if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+        
         clientesAMostrar.forEach(cliente => {
             const isSelected = selectedClients.has(cliente.codigo);
             const line = document.createElement('div');
             line.className = 'client-line';
             line.classList.toggle('selected', isSelected);
-    
-            const cleanAddress = getCleanAddressForMap(cliente);
-            const encodedAddress = encodeURIComponent(`${cleanAddress}, Spain`);
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${encodedAddress}`;
     
             const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
             
@@ -388,12 +389,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label class="checkbox-container" for="check-${cliente.codigo}">
                     <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
                 </label>
-                <a href="${mapsUrl}" target="_blank" class="client-info-link" title="Ver en Google Maps: ${cleanAddress}">
-                    <div class="client-info">
-                        <strong>${cliente.cadena} (${cliente.codigo})</strong>
-                        <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
-                    </div>
-                </a>
+                <div class="client-info">
+                    <strong>${cliente.cadena} (${cliente.codigo})</strong>
+                    <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
+                </div>
                 <span class="client-medalla medalla-${medallaClass}">${cliente.medalla}</span>
             `;
     
@@ -413,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             line.addEventListener('click', (e) => {
-                if (e.target.closest('.client-info-link') || e.target.closest('.checkbox-container')) {
+                if (e.target.closest('.checkbox-container')) {
                     return;
                 }
                 const checkbox = line.querySelector('input[type="checkbox"]');
@@ -424,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateSelectionUI();
             });
     
-            clientList.appendChild(line);
+            if (clientList) clientList.appendChild(line);
         });
         currentFilteredClients = clientesAMostrar;
         updateSelectionUI();
@@ -432,25 +431,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSelectionUI() {
         const selectedCount = selectedClients.size;
-        clientCount.textContent = `(${selectedCount} sel.) | Mostrando ${currentFilteredClients.length} de ${clientes.length}`;
+        if (clientCount) clientCount.textContent = `Mostrando ${currentFilteredClients.length} de ${clientes.length} clientes | (${selectedCount} sel.)`;
         const hasSelection = selectedCount > 0;
         
-        [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, createMapBtn].forEach(btn => {
+        const actionButtons = [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, openMapBtn];
+        actionButtons.forEach(btn => {
             if (btn) btn.disabled = !hasSelection;
         });
 
-        if (currentFilteredClients.length > 0) {
-            const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
-            selectAllCheckbox.checked = allVisibleSelected;
-            selectAllCheckbox.indeterminate = !allVisibleSelected && currentFilteredClients.some(c => selectedClients.has(c.codigo));
-        } else {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
+        if (createMapBtn) {
+            if (hasSelection) {
+                createMapBtn.classList.remove('disabled');
+                const clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
+                const mapsUrl = generarUrlDeNavegacion(clientsToMap);
+                createMapBtn.href = mapsUrl;
+            } else {
+                createMapBtn.classList.add('disabled');
+                createMapBtn.href = '#';
+            }
         }
 
-        // **AÑADIDO**: Cambiar el estilo del botón Limpiar si hay selección
+        if (selectAllCheckbox) {
+            if (currentFilteredClients.length > 0) {
+                const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
+                selectAllCheckbox.checked = allVisibleSelected;
+                selectAllCheckbox.indeterminate = !allVisibleSelected && currentFilteredClients.some(c => selectedClients.has(c.codigo));
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
         if (resetBtn) {
-            resetBtn.classList.toggle('active-reset', hasSelection);
+            const hasFilters = searchBox.value || rutaFilter.value || cadenaFilter.value || medallaFilter.value;
+            resetBtn.classList.toggle('active-reset', hasSelection || hasFilters);
         }
     }
 
@@ -481,19 +495,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const clienteUnico = clientesFiltrados[0];
             const rutaCliente = clienteUnico.plan;
 
-            searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
-            searchResultInfo.classList.remove('hidden');
-            rutaFilter.value = rutaCliente;
-            rutaFilter.classList.add('highlight-select');
+            if (searchResultInfo) {
+                searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
+                searchResultInfo.classList.remove('hidden');
+            }
+            if (rutaFilter) {
+                rutaFilter.value = rutaCliente;
+                rutaFilter.classList.add('highlight-select');
+            }
             
             gestionarFiltroDias();
 
             const diasVisita = [...new Set(clienteUnico.diaVisita.match(/[LMXJVS]/g) || [])];
-            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
-                if (diasVisita.includes(btn.dataset.day)) {
-                    btn.classList.add('highlight');
-                }
-            });
+            if (diasFilterContainer) {
+                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
+                    if (diasVisita.includes(btn.dataset.day)) {
+                        btn.classList.add('highlight');
+                    }
+                });
+            }
         }
 
         const sortFunctions = {
@@ -507,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function gestionarFiltroDias() {
+        if (!diasFilterContainer) return;
         const rutaSeleccionada = rutaFilter.value;
         diasFilterContainer.innerHTML = '';
         diasFilterContainer.classList.add('hidden');
@@ -538,7 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
             activeDayFilter = null;
             clickedButton.classList.remove('active');
         } else {
-            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('active'));
+            if (diasFilterContainer) {
+                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('active'));
+            }
             clickedButton.classList.add('active');
             activeDayFilter = day;
         }
@@ -546,8 +569,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function limpiarFiltros() {
-        document.querySelector('.filter-container').reset();
-        sortSelect.selectedIndex = 0;
+        if (searchBox) searchBox.value = '';
+        if (rutaFilter) rutaFilter.value = '';
+        if (cadenaFilter) cadenaFilter.value = '';
+        if (medallaFilter) medallaFilter.value = '';
+        if (sortSelect) sortSelect.selectedIndex = 0;
         activeDayFilter = null;
         selectedClients.clear();
         history.pushState(null, '', window.location.pathname);
@@ -578,43 +604,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const textToCopy = clients.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}`).join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const button = document.getElementById('copy-selection-btn');
-                const originalContent = button.innerHTML;
-                button.innerHTML = '<span>¡Copiado!</span>';
-                setTimeout(() => button.innerHTML = originalContent, 2000);
+                if (button) {
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<span>¡Copiado!</span>';
+                    setTimeout(() => button.innerHTML = originalContent, 2000);
+                }
             });
         }
     }
     
-    function crearMapa(clients) {
-        if (clients.length === 0) return;
-    
-        const MAX_WAYPOINTS = 25; 
-        if (clients.length > MAX_WAYPOINTS) {
-            alert(`Puedes visualizar un máximo de ${MAX_WAYPOINTS} clientes a la vez. Se mostrarán los primeros ${MAX_WAYPOINTS} de tu selección.`);
-            clients = clients.slice(0, MAX_WAYPOINTS);
+    function generarUrlDeNavegacion(clients) {
+        const baseUrl = 'https://www.google.com/maps/dir/';
+        let params = new URLSearchParams();
+        params.append('api', '1');
+        params.append('travelmode', 'driving');
+
+        const addresses = clients.map(client => getCleanAddressForMap(client));
+        
+        if (addresses.length === 1) {
+            params.append('destination', addresses[0]);
+        } else {
+            const destination = addresses.pop();
+            const waypoints = addresses.join('|');
+            params.append('destination', destination);
+            params.append('waypoints', waypoints);
         }
-    
-        const formatAddress = (cliente) => {
-            const cleanAddress = getCleanAddressForMap(cliente);
-            return encodeURIComponent(`${cleanAddress}, Spain`);
-        };
-        
-        const locationsPath = clients.map(formatAddress).join('/');
-        const mapsUrl = `https://www.google.com/maps/dir/$${locationsPath}`;
-        
-        window.open(mapsUrl, '_blank');
+
+        return `${baseUrl}?${params.toString()}`;
     }
 
     function aplicarFiltrosDesdeURL() {
         const params = new URLSearchParams(window.location.search);
         
-        searchBox.value = params.get('q') || '';
-        rutaFilter.value = params.get('ruta') || '';
-        cadenaFilter.value = params.get('cadena') || '';
-        medallaFilter.value = params.get('medalla') || '';
-        sortSelect.value = params.get('sort') || 'codigo-asc';
+        if (searchBox) searchBox.value = params.get('q') || '';
+        if (rutaFilter) rutaFilter.value = params.get('ruta') || '';
+        if (cadenaFilter) cadenaFilter.value = params.get('cadena') || '';
+        if (medallaFilter) medallaFilter.value = params.get('medalla') || '';
+        if (sortSelect) sortSelect.value = params.get('sort') || 'codigo-asc';
         
-        if (rutaFilter.value) {
+        if (rutaFilter && rutaFilter.value) {
             gestionarFiltroDias();
             const diaParam = params.get('dia');
             if (diaParam) {
@@ -627,28 +655,103 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 8. INICIALIZACIÓN DE LA APLICACIÓN ---
+    // --- 5. LÓGICA DEL MAPA (GEOCODIFICACIÓN) ---
+    let map = null;
+    const markersLayer = L.layerGroup();
+
+    async function geocodeAddress(address) {
+        const fullAddress = `${address}, Spain`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            }
+            return null;
+        } catch (error) {
+            console.error("Error de geocodificación:", error);
+            return null;
+        }
+    }
+
+    async function showMapWithSelectedClients() {
+        const selectedClientsData = clientes.filter(c => selectedClients.has(c.codigo));
+        if (selectedClientsData.length === 0) {
+            alert('No hay clientes seleccionados para mostrar.');
+            return;
+        }
+
+        if (mapModal) mapModal.classList.remove('hidden');
+        if (routeDetails) routeDetails.innerHTML = '🌍 Geocodificando direcciones...';
+
+        if (!map) {
+            map = L.map('map-container').setView([41.5, 2.0], 9);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            markersLayer.addTo(map);
+        }
+        setTimeout(() => map.invalidateSize(), 100);
+
+        markersLayer.clearLayers();
+        const allMarkers = [];
+        let foundCount = 0;
+
+        for (const [index, cliente] of selectedClientsData.entries()) {
+            const address = getCleanAddressForMap(cliente);
+            if (routeDetails) {
+                routeDetails.innerHTML = `Buscando ${index + 1}/${selectedClientsData.length}:<br><em>${address}</em>`;
+            }
+
+            const coords = await geocodeAddress(address);
+            if (coords) {
+                foundCount++;
+                const marker = L.marker([coords.lat, coords.lon]);
+                marker.bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
+                allMarkers.push(marker);
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        if (routeDetails) {
+            routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
+        }
+        
+        allMarkers.forEach(m => markersLayer.addLayer(m));
+
+        if (allMarkers.length > 0) {
+            const group = new L.featureGroup(allMarkers);
+            map.fitBounds(group.getBounds().pad(0.3));
+        }
+    }
+
+    function closeMapModal() {
+        if (mapModal) mapModal.classList.add('hidden');
+    }
+
+
+    // --- 6. INICIALIZACIÓN ---
     function init() {
-        // Llenar los selects
         const rutas = [...new Set(clientes.map(c => c.plan))].sort();
         const cadenas = [...new Set(clientes.map(c => c.cadena))].sort();
         const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
-        rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
-        cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
-        medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
         
-        // Configurar tema inicial
+        if (rutaFilter) rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
+        if (cadenaFilter) cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
+        if (medallaFilter) medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
+        
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
         
-        // Aplicar filtros de URL y luego renderizar todo
         aplicarFiltrosDesdeURL();
         aplicarFiltros();
 
-        // Asignar todos los event listeners
-        toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
+        // Listeners de eventos
+        if (toggleViewBtn) toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
         
-        themeToggle.addEventListener('click', () => {
+        if (themeToggle) themeToggle.addEventListener('click', () => {
             const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
@@ -659,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if(scrollToTopBtn) scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        selectAllCheckbox.addEventListener('change', (e) => {
+        if (selectAllCheckbox) selectAllCheckbox.addEventListener('change', (e) => {
             currentFilteredClients.forEach(cliente => {
                 e.target.checked ? selectedClients.add(cliente.codigo) : selectedClients.delete(cliente.codigo);
             });
@@ -683,13 +786,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'pdf', 'Seleccion_Clientes'));
         if (exportExcelBtn) exportExcelBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'excel', 'Seleccion_Clientes'));
         
-        if (createMapBtn) createMapBtn.addEventListener('click', () => crearMapa(clientes.filter(c => selectedClients.has(c.codigo))));
-        
         if(exportExcelDayBtn) exportExcelDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'excel', `Plan_del_${activeDay}`));
 
         if(closeModalBtn) closeModalBtn.addEventListener('click', closePreviewModal);
         if(previewModal) previewModal.addEventListener('click', (e) => {
             if (e.target === previewModal) closePreviewModal();
+        });
+        
+        // Listeners para el mapa
+        if (openMapBtn) openMapBtn.addEventListener('click', showMapWithSelectedClients);
+        if (closeMapModalBtn) closeMapModalBtn.addEventListener('click', closeMapModal);
+        if (mapModal) mapModal.addEventListener('click', (e) => {
+            if (e.target === mapModal) closeMapModal();
         });
     }
 
