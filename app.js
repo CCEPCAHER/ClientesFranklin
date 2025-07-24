@@ -238,124 +238,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function mostrarClientes(clientesAMostrar) {
-        if (!clientList) return;
-        clientList.innerHTML = '';
-        if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+    if (!clientList) return;
+    clientList.innerHTML = '';
+    if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+    
+    clientesAMostrar.forEach(cliente => {
+        const isSelected = selectedClients.has(cliente.codigo);
+        const line = document.createElement('div');
+        line.className = 'client-line';
+        line.classList.toggle('selected', isSelected);
+        const medallasFinales = getMedalEmojis(cliente);
         
-        clientesAMostrar.forEach(cliente => {
-            const isSelected = selectedClients.has(cliente.codigo);
-            const line = document.createElement('div');
-            line.className = 'client-line';
-            line.classList.toggle('selected', isSelected);
-            const medallasFinales = getMedalEmojis(cliente);
-            
-            line.innerHTML = `
-                <label class="checkbox-container" for="check-${cliente.codigo}">
-                    <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
-                </label>
-                <div class="client-info">
-                    <strong>${cliente.cadena} (${cliente.codigo})</strong>
-                    <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
-                </div>
-                <span class="client-medalla">${medallasFinales}</span>
-            `;
-    
-            line.addEventListener('click', (e) => {
-                const checkbox = line.querySelector('input[type="checkbox"]');
-                if (e.target.nodeName !== 'INPUT') {
-                    checkbox.checked = !checkbox.checked;
-                }
-                const codigo = checkbox.dataset.codigo;
-                checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
-                updateSelectionUI();
-            });
-    
-            clientList.appendChild(line);
-        });
-        currentFilteredClients = clientesAMostrar;
-        updateSelectionUI();
-    }
-    
-    function aplicarFiltros() {
-        const searchTerm = searchBox.value.toLowerCase().trim();
+        line.innerHTML = `
+            <label class="checkbox-container" for="check-${cliente.codigo}">
+                <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
+            </label>
+            <div class="client-info">
+                <strong>${cliente.cadena} (${cliente.codigo})</strong>
+                <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
+            </div>
+            <span class="client-medalla">${medallasFinales}</span>
+        `;
 
-        // --- CORRECCIÓN DEFINITIVA ---
-        // Si el buscador está vacío, nos aseguramos de que el desplegable de ruta 
-        // no se quede "atascado" con un valor de una búsqueda anterior.
-        if (!searchTerm && rutaFilter.classList.contains('highlight-select')) {
+        line.addEventListener('click', (e) => {
+            const checkbox = line.querySelector('input[type="checkbox"]');
+            if (e.target.nodeName !== 'INPUT') {
+                checkbox.checked = !checkbox.checked;
+            }
+            const codigo = checkbox.dataset.codigo;
+            checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
+            updateSelectionUI();
+        });
+
+        clientList.appendChild(line);
+    });
+    currentFilteredClients = clientesAMostrar;
+    updateSelectionUI();
+}
+
+/**
+ * Applies all selected filters to the client list.
+ * It includes an improved "smart search" that auto-populates filters for a unique
+ * search result but allows the user to override it without getting stuck.
+ */
+function aplicarFiltros() {
+    const searchTerm = searchBox.value.toLowerCase().trim();
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    // 1. Identifica si la nueva búsqueda es general (no para un cliente único).
+    const potentialMatches = searchTerm ? clientes.filter(cliente =>
+        `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase().includes(searchTerm)
+    ) : [];
+
+    // 2. Si la búsqueda es general, limpia los filtros que se auto-rellenaron previamente.
+    // Esto soluciona el problema de que los valores se queden "atascados".
+    if (potentialMatches.length !== 1) {
+        if (rutaFilter.classList.contains('highlight-select')) {
             rutaFilter.value = '';
         }
-
-        if(searchResultInfo) searchResultInfo.classList.add('hidden');
-        if(rutaFilter) rutaFilter.classList.remove('highlight-select');
-        if(diasFilterContainer) {
-            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
+        if (medallaFilter.classList.contains('highlight-select')) {
+            medallaFilter.value = '';
         }
-
-        const rutaSeleccionada = rutaFilter.value;
-        const cadenaSeleccionada = cadenaFilter.value;
-        const medallaSeleccionada = medallaFilter.value;
-        const franquiciaSeleccionada = franquiciaFilter.value;
-        const sortOption = sortSelect.value;
-
-        let clientesFiltrados = clientes.filter(cliente => {
-            const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
-            
-            const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
-            const matchesFranquicia = !franquiciaSeleccionada ||
-                                      (franquiciaSeleccionada === 'si' && esFranquicia) ||
-                                      (franquiciaSeleccionada === 'no' && !esFranquicia);
-
-            const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
-            const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
-            const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
-            const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
-            const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
-            
-            return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay && matchesFranquicia;
-        });
-        
-        if (clientesFiltrados.length === 1 && searchTerm) {
-            const clienteUnico = clientesFiltrados[0];
-            const medallasEmoji = getMedalEmojis(clienteUnico);
-            
-            if (searchResultInfo) {
-                searchResultInfo.innerHTML = `
-                    <span title="Ruta">🗺️ <strong>${clienteUnico.plan}</strong></span>
-                    <span class="info-separator">|</span>
-                    <span title="Medalla">${medallasEmoji} <strong>${clienteUnico.medalla}</strong></span>
-                    <span class="info-separator">|</span>
-                    <span title="Días de Visita">📅 <strong>${clienteUnico.diaVisita}</strong></span>
-                `;
-                searchResultInfo.classList.remove('hidden');
-            }
-
-            if (rutaFilter) {
-                rutaFilter.value = clienteUnico.plan;
-                rutaFilter.classList.add('highlight-select');
-            }
-            
-            gestionarFiltroDias();
-
-            const diasVisita = [...new Set(clienteUnico.diaVisita.match(/[LMXJVS]/g) || [])];
-            if (diasFilterContainer) {
-                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
-                    if (diasVisita.includes(btn.dataset.day)) {
-                        btn.classList.add('highlight');
-                    }
-                });
-            }
-        }
-
-        const sortFunctions = {
-            'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
-            'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
-            'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
-        };
-        clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
-        
-        mostrarClientes(clientesFiltrados);
     }
+    // --- FIN DE LA CORRECCIÓN ---
+
+    // 3. Resetea todos los indicadores visuales para la nueva renderización.
+    if (searchResultInfo) searchResultInfo.classList.add('hidden');
+    if (rutaFilter) rutaFilter.classList.remove('highlight-select');
+    if (medallaFilter) medallaFilter.classList.remove('highlight-select');
+    if (diasFilterContainer) {
+        diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
+    }
+
+    // 4. Obtiene los valores finales de los filtros (ya sea los que acaba de limpiar o los que el usuario ha puesto).
+    const rutaSeleccionada = rutaFilter.value;
+    const cadenaSeleccionada = cadenaFilter.value;
+    const medallaSeleccionada = medallaFilter.value;
+    const franquiciaSeleccionada = franquiciaFilter.value;
+    const sortOption = sortSelect.value;
+
+    // 5. Filtra la lista de clientes con todos los criterios.
+    let clientesFiltrados = clientes.filter(cliente => {
+        const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
+        const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
+        
+        const matchesFranquicia = !franquiciaSeleccionada || (franquiciaSeleccionada === 'si' && esFranquicia) || (franquiciaSeleccionada === 'no' && !esFranquicia);
+        const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
+        const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
+        const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
+        const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
+        const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
+        
+        return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay && matchesFranquicia;
+    });
+
+    // 6. Si el resultado final es un cliente único, muestra la información y resalta los filtros.
+    if (potentialMatches.length === 1) {
+        const clienteUnico = potentialMatches[0];
+        // Asigna los valores a los filtros solo si están vacíos.
+        if (rutaFilter.value === '') rutaFilter.value = clienteUnico.plan;
+        if (medallaFilter.value === '') medallaFilter.value = clienteUnico.medalla;
+
+        // Si los valores actuales coinciden con el cliente único, se resalta.
+        if (rutaFilter.value === clienteUnico.plan) rutaFilter.classList.add('highlight-select');
+        if (medallaFilter.value === clienteUnico.medalla) medallaFilter.classList.add('highlight-select');
+        
+        // Muestra la barra de información.
+        const medallasEmoji = getMedalEmojis(clienteUnico);
+        if (searchResultInfo) {
+            searchResultInfo.innerHTML = `
+                <span title="Ruta">🗺️ <strong>${clienteUnico.plan}</strong></span>
+                <span class="info-separator">|</span>
+                <span title="Medalla">${medallasEmoji} <strong>${clienteUnico.medalla}</strong></span>
+                <span class="info-separator">|</span>
+                <span title="Días de Visita">📅 <strong>${clienteUnico.diaVisita}</strong></span>
+            `;
+            searchResultInfo.classList.remove('hidden');
+        }
+    }
+
+    // 7. Ordena y muestra los clientes filtrados.
+    const sortFunctions = {
+        'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
+        'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
+        'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
+    };
+    clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
+    
+    mostrarClientes(clientesFiltrados);
+}
 
     function getCleanAddressForMap(cliente) {
         let address = cliente.nombre;
