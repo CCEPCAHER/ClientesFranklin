@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. DATOS DE CLIENTES ---
     const clientes = [
         { "codigo": "8103539", "plan": "CAT21", "cadena": "Condis", "nombre": "De Catalunya, 24", "poblacion": "Aiguafreda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Crta. Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+        { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Carretera de Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
         { "codigo": "8106896", "plan": "CAT21", "cadena": "Esclat", "nombre": "Crta. C-17, km 54,5", "poblacion": "Malla", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
         { "codigo": "8109293", "plan": "CAT21", "cadena": "Consum Charter", "nombre": "Enric Prat de la Riba, 9", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
         { "codigo": "8109298", "plan": "CAT21", "cadena": "Esclat", "nombre": "Manlleu, 117", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
@@ -136,7 +135,40 @@ document.addEventListener('DOMContentLoaded', () => {
         { "codigo": "8123894", "plan": "PlatinoC4", "cadena": "Carrefour", "nombre": "Avda. Via Augusta, 2", "poblacion": "Sant Cugat del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" }
     ];
 
-    // --- 2. REFERENCIAS A ELEMENTOS DEL DOM ---
+    const FRANQUICIA_PDV_CODES = new Set([
+        "8103539", "8105732", "8109293", "8134816", "8108209", "8108220",
+        "8120749", "8124892", "8104059", "8104165", "8107214", "8108090",
+        "8108761", "8108763", "8108764", "8108765", "8120481", "8123068",
+        "8124713", "8134941", "8107243", "8134283", "8131135", "8133631"
+    ]);
+
+    const MEDALLA_EMOJIS = {
+        "Platino": "💎",
+        "Plata": "🥈",
+        "Bronce": "🥉",
+        "default": "⚪" 
+    };
+    
+    const FRANQUICIA_EMOJI = '🌟';
+
+
+    const REGALOS_DISPONIBLES = [
+        { id: '6131233', nombre: 'Gorras' },
+        { id: '6127586', nombre: 'Pizarras' },
+        { id: '6131343', nombre: 'Vasos' },
+        { id: '6131340', nombre: 'Bolsas' },
+        { id: '6127585', nombre: 'Delantales' }
+    ];
+
+    const selectedClients = new Set();
+    let currentFilteredClients = [];
+    let activeDayFilter = null;
+    let currentView = 'filters';
+    let currentDailyClients = [];
+    let activeDay = 'Lunes';
+    let map = null;
+    const markersLayer = L.layerGroup();
+
     const mainTitle = document.getElementById('main-title');
     const toggleViewBtn = document.getElementById('toggle-view-btn');
     const filterView = document.getElementById('filter-view');
@@ -145,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rutaFilter = document.getElementById('ruta-filter');
     const cadenaFilter = document.getElementById('cadena-filter');
     const medallaFilter = document.getElementById('medalla-filter');
+    const franquiciaFilter = document.getElementById('franquicia-filter');
     const sortSelect = document.getElementById('sort-select');
     const resetBtn = document.getElementById('reset-btn');
     const clientList = document.getElementById('client-list');
@@ -158,32 +191,151 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const scrollToTopBtn = document.getElementById('scroll-to-top');
     const selectAllCheckbox = document.getElementById('select-all-checkbox');
-    const previewModal = document.getElementById('preview-modal');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const modalClientList = document.getElementById('modal-client-list');
-    const modalClientCount = document.getElementById('modal-client-count');
     const diasNav = document.getElementById('dias-nav');
     const searchResultInfo = document.getElementById('search-result-info');
     const createMapBtn = document.getElementById('create-map-btn');
     const clientCountDaily = document.getElementById('client-count-daily');
     const exportExcelDayBtn = document.getElementById('export-excel-day-btn');
     const actionsBarDaily = document.getElementById('actions-bar-daily');
-    
-    // Referencias para el modal del mapa
+    const previewModal = document.getElementById('preview-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalClientList = document.getElementById('modal-client-list');
+    const modalClientCount = document.getElementById('modal-client-count');
     const mapModal = document.getElementById('map-modal');
     const openMapBtn = document.getElementById('open-map-btn');
     const closeMapModalBtn = document.getElementById('close-map-modal-btn');
     const routeDetails = document.getElementById('route-details');
+    const manageGiftsBtn = document.getElementById('manage-gifts-btn');
+    const giftsModal = document.getElementById('gifts-modal');
+    const closeGiftsModalBtn = document.getElementById('close-gifts-modal-btn');
+    const modalGiftsList = document.getElementById('modal-gifts-list');
+    const copyGiftsBtn = document.getElementById('copy-gifts-btn');
 
-    // --- 3. ESTADO DE LA APLICACIÓN ---
-    const selectedClients = new Set();
-    let currentFilteredClients = [];
-    let activeDayFilter = null;
-    let currentView = 'filters';
-    let currentDailyClients = [];
-    let activeDay = 'Lunes';
+    function getMedalEmojis(cliente) {
+        const medallaBase = cliente.medalla || 'default';
+        let medallaEmoji = '';
+
+        if (medallaBase.startsWith("Oro Plus")) {
+            const numero = parseInt(medallaBase.split(" ").pop(), 10);
+            if (!isNaN(numero)) {
+                medallaEmoji = '🥇'.repeat(numero);
+            } else {
+                medallaEmoji = '🥇';
+            }
+        } else {
+            medallaEmoji = MEDALLA_EMOJIS[medallaBase] || MEDALLA_EMOJIS['default'];
+        }
+
+        const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
+        const medallaFranquicia = esFranquicia ? FRANQUICIA_EMOJI : '';
+        
+        return `${medallaEmoji}${medallaFranquicia}`;
+    }
+
+    function mostrarClientes(clientesAMostrar) {
+        if (!clientList) return;
+        clientList.innerHTML = '';
+        if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+        
+        clientesAMostrar.forEach(cliente => {
+            const isSelected = selectedClients.has(cliente.codigo);
+            const line = document.createElement('div');
+            line.className = 'client-line';
+            line.classList.toggle('selected', isSelected);
+            const medallasFinales = getMedalEmojis(cliente);
+            
+            line.innerHTML = `
+                <label class="checkbox-container" for="check-${cliente.codigo}">
+                    <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
+                </label>
+                <div class="client-info">
+                    <strong>${cliente.cadena} (${cliente.codigo})</strong>
+                    <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
+                </div>
+                <span class="client-medalla">${medallasFinales}</span>
+            `;
     
-    // --- 4. FUNCIONES ---
+            line.addEventListener('click', (e) => {
+                const checkbox = line.querySelector('input[type="checkbox"]');
+                if (e.target.nodeName !== 'INPUT') {
+                    checkbox.checked = !checkbox.checked;
+                }
+                const codigo = checkbox.dataset.codigo;
+                checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
+                updateSelectionUI();
+            });
+    
+            clientList.appendChild(line);
+        });
+        currentFilteredClients = clientesAMostrar;
+        updateSelectionUI();
+    }
+    
+    function aplicarFiltros() {
+        if(searchResultInfo) searchResultInfo.classList.add('hidden');
+        if(rutaFilter) rutaFilter.classList.remove('highlight-select');
+        if(diasFilterContainer) {
+            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
+        }
+
+        const searchTerm = searchBox.value.toLowerCase().trim();
+        const rutaSeleccionada = rutaFilter.value;
+        const cadenaSeleccionada = cadenaFilter.value;
+        const medallaSeleccionada = medallaFilter.value;
+        const franquiciaSeleccionada = franquiciaFilter.value;
+        const sortOption = sortSelect.value;
+
+        let clientesFiltrados = clientes.filter(cliente => {
+            const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
+            
+            const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
+            const matchesFranquicia = !franquiciaSeleccionada ||
+                                      (franquiciaSeleccionada === 'si' && esFranquicia) ||
+                                      (franquiciaSeleccionada === 'no' && !esFranquicia);
+
+            const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
+            const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
+            const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
+            const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
+            const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
+            
+            return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay && matchesFranquicia;
+        });
+        
+        if (clientesFiltrados.length === 1 && searchTerm) {
+            const clienteUnico = clientesFiltrados[0];
+            const rutaCliente = clienteUnico.plan;
+
+            if (searchResultInfo) {
+                searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
+                searchResultInfo.classList.remove('hidden');
+            }
+            if (rutaFilter) {
+                rutaFilter.value = rutaCliente;
+                rutaFilter.classList.add('highlight-select');
+            }
+            
+            gestionarFiltroDias();
+
+            const diasVisita = [...new Set(clienteUnico.diaVisita.match(/[LMXJVS]/g) || [])];
+            if (diasFilterContainer) {
+                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
+                    if (diasVisita.includes(btn.dataset.day)) {
+                        btn.classList.add('highlight');
+                    }
+                });
+            }
+        }
+
+        const sortFunctions = {
+            'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
+            'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
+            'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
+        };
+        clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
+        
+        mostrarClientes(clientesFiltrados);
+    }
 
     function getCleanAddressForMap(cliente) {
         let address = cliente.nombre;
@@ -208,6 +360,359 @@ document.addEventListener('DOMContentLoaded', () => {
             filterView.classList.add('hidden');
             dailyRoutesView.classList.remove('hidden');
             initializeDailyRoutes();
+        }
+    }
+
+    function applyTheme(theme) {
+        document.body.classList.toggle('dark-mode', theme === 'dark');
+        if (themeToggle) {
+            const sunIcon = themeToggle.querySelector('.sun');
+            const moonIcon = themeToggle.querySelector('.moon');
+            if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
+            if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
+        }
+    };
+
+    function updateSelectionUI() {
+        document.querySelectorAll('.client-line').forEach(line => {
+            const checkbox = line.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                const isSelected = selectedClients.has(checkbox.dataset.codigo);
+                line.classList.toggle('selected', isSelected);
+                checkbox.checked = isSelected;
+            }
+        });
+
+        const selectedCount = selectedClients.size;
+        if (clientCount) clientCount.textContent = `Mostrando ${currentFilteredClients.length} de ${clientes.length} clientes | (${selectedCount} sel.)`;
+        const hasSelection = selectedCount > 0;
+        
+        const actionButtons = [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, openMapBtn, manageGiftsBtn, createMapBtn];
+        actionButtons.forEach(btn => {
+            if (btn) btn.disabled = !hasSelection;
+        });
+        
+        if (createMapBtn) {
+            if (hasSelection) {
+                createMapBtn.classList.remove('disabled');
+                const clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
+                createMapBtn.href = generarUrlDeNavegacion(clientsToMap);
+            } else {
+                createMapBtn.classList.add('disabled');
+                createMapBtn.href = '#';
+            }
+        }
+
+        if (selectAllCheckbox) {
+            if (currentFilteredClients.length > 0) {
+                const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
+                selectAllCheckbox.checked = allVisibleSelected;
+                selectAllCheckbox.indeterminate = !allVisibleSelected && currentFilteredClients.some(c => selectedClients.has(c.codigo));
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
+        if (resetBtn) {
+            const hasFilters = searchBox.value || rutaFilter.value || cadenaFilter.value || medallaFilter.value || franquiciaFilter.value;
+            resetBtn.classList.toggle('active-reset', hasSelection || hasFilters);
+        }
+    }
+
+    function gestionarFiltroDias() {
+        if (!diasFilterContainer) return;
+        const rutaSeleccionada = rutaFilter.value;
+        diasFilterContainer.innerHTML = '';
+        diasFilterContainer.classList.add('hidden');
+        if (rutaSeleccionada) {
+            const dias = ['L', 'M', 'X', 'J', 'V', 'S'];
+            const label = document.createElement('span');
+            label.textContent = "Filtrar por día:";
+            label.style.fontWeight = 'bold';
+            diasFilterContainer.appendChild(label);
+            dias.forEach(dia => {
+                const btn = document.createElement('button');
+                btn.className = 'dia-btn';
+                btn.textContent = dia;
+                btn.dataset.day = dia;
+                if (dia === activeDayFilter) btn.classList.add('active');
+                btn.addEventListener('click', onDiaButtonClick);
+                diasFilterContainer.appendChild(btn);
+            });
+            diasFilterContainer.classList.remove('hidden');
+        } else {
+            activeDayFilter = null;
+        }
+    }
+
+    function onDiaButtonClick(event) {
+        const clickedButton = event.target;
+        const day = clickedButton.dataset.day;
+        if (clickedButton.classList.contains('active')) {
+            activeDayFilter = null;
+            clickedButton.classList.remove('active');
+        } else {
+            if (diasFilterContainer) {
+                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('active'));
+            }
+            clickedButton.classList.add('active');
+            activeDayFilter = day;
+        }
+        aplicarFiltros();
+    }
+
+    function limpiarFiltros() {
+        if (searchBox) searchBox.value = '';
+        if (rutaFilter) rutaFilter.value = '';
+        if (cadenaFilter) cadenaFilter.value = '';
+        if (medallaFilter) medallaFilter.value = '';
+        if (franquiciaFilter) franquiciaFilter.value = '';
+        if (sortSelect) sortSelect.selectedIndex = 0;
+        activeDayFilter = null;
+        selectedClients.clear();
+        history.pushState(null, '', window.location.pathname);
+        gestionarFiltroDias();
+        aplicarFiltros();
+    }
+    
+    function generarUrlDeNavegacion(clients) {
+        if (clients.length === 0) return '#';
+        // CORRECCIÓN 1: Se ha cambiado la URL base por la correcta para Google Maps Directions.
+        // La URL original ('https://www.google.com/maps/dir/') no es un formato estándar.
+        // El nuevo formato 'https://www.google.com/maps/dir/' permite crear una ruta con múltiples destinos.
+        // Se usa '//' para indicar que no hay un punto de partida, los clientes son los destinos.
+        const baseUrl = 'https://www.google.com/maps/dir/';
+        const addresses = clients.map(client => encodeURIComponent(getCleanAddressForMap(client)));
+        return baseUrl + '/' + addresses.join('/');
+    }
+
+    function aplicarFiltrosDesdeURL() {
+        const params = new URLSearchParams(window.location.search);
+        
+        if (searchBox) searchBox.value = params.get('q') || '';
+        if (rutaFilter) rutaFilter.value = params.get('ruta') || '';
+        if (cadenaFilter) cadenaFilter.value = params.get('cadena') || '';
+        if (medallaFilter) medallaFilter.value = params.get('medalla') || '';
+        if (franquiciaFilter) franquiciaFilter.value = params.get('franquicia') || '';
+        if (sortSelect) sortSelect.value = params.get('sort') || 'codigo-asc';
+        
+        if (rutaFilter && rutaFilter.value) {
+            gestionarFiltroDias();
+            const diaParam = params.get('dia');
+            if (diaParam) {
+                // CORRECCIÓN 2: Se han añadido comillas al selector de atributo `[data-day="${diaParam}"]`.
+                // Sin las comillas, es una sintaxis de selector inválida y causa un error.
+                const diaBtn = diasFilterContainer.querySelector(`.dia-btn[data-day="${diaParam}"]`);
+                if (diaBtn) {
+                    activeDayFilter = diaParam;
+                    diaBtn.classList.add('active');
+                }
+            }
+        }
+    }
+
+    function openPreviewModal() {
+        if (selectedClients.size === 0) return;
+        const clientsToShow = clientes.filter(c => selectedClients.has(c.codigo));
+        if (modalClientList) modalClientList.innerHTML = '';
+        clientsToShow.forEach(cliente => {
+            const clientElement = document.createElement('p');
+            clientElement.textContent = `${cliente.codigo} ${cliente.cadena} (${cliente.medalla}) - ${cliente.nombre}, ${cliente.poblacion}`;
+            if (modalClientList) modalClientList.appendChild(clientElement);
+        });
+        if (modalClientCount) modalClientCount.textContent = `Total: ${clientsToShow.length} clientes seleccionados`;
+        if (previewModal) previewModal.classList.remove('hidden');
+    }
+
+    function closePreviewModal() {
+        if (previewModal) previewModal.classList.add('hidden');
+    }
+
+    function openGiftsModal() {
+        if (selectedClients.size === 0 || !modalGiftsList) return;
+        modalGiftsList.innerHTML = '';
+
+        const selectedClientObjects = Array.from(selectedClients)
+            .map(id => clientes.find(c => c.codigo === id))
+            .filter(Boolean); 
+
+        selectedClientObjects.forEach(client => {
+            const clientSection = document.createElement('div');
+            clientSection.className = 'gift-client-section';
+            clientSection.dataset.clientCode = client.codigo;
+            
+            clientSection.innerHTML = `<h3>${client.cadena} - ${client.nombre} (${client.poblacion})</h3>`;
+
+            const giftsContainer = document.createElement('div');
+            giftsContainer.className = 'gift-list-per-client';
+
+            REGALOS_DISPONIBLES.forEach(regalo => {
+                const giftItem = document.createElement('div');
+                giftItem.className = 'gift-item';
+                giftItem.innerHTML = `
+                    <input type="checkbox" id="gift-${client.codigo}-${regalo.id}" data-gift-id="${regalo.id}" data-gift-name="${regalo.nombre}">
+                    <label for="gift-${client.codigo}-${regalo.id}">${regalo.id} ${regalo.nombre}</label>
+                    <input type="number" min="1" value="1" class="gift-quantity" aria-label="Cantidad para ${regalo.nombre}">
+                `;
+                giftsContainer.appendChild(giftItem);
+            });
+            clientSection.appendChild(giftsContainer);
+            modalGiftsList.appendChild(clientSection);
+        });
+        
+        if(giftsModal) giftsModal.classList.remove('hidden');
+    }
+
+    function closeGiftsModal() {
+        if (giftsModal) giftsModal.classList.add('hidden');
+    }
+
+    function copyGiftsOrder() {
+        if (!modalGiftsList) return;
+        const clientSections = modalGiftsList.querySelectorAll('.gift-client-section');
+        let finalOutput = [];
+
+        clientSections.forEach(section => {
+            const clientCode = section.dataset.clientCode;
+            const client = clientes.find(c => c.codigo === clientCode);
+            if (!client) return;
+            
+            let clientLine = `${client.codigo}\t${client.cadena}\t${client.nombre}\t${client.poblacion}`;
+            let giftsLines = [];
+
+            const selectedGifts = section.querySelectorAll('input[type="checkbox"]:checked');
+            selectedGifts.forEach(checkbox => {
+                const giftId = checkbox.dataset.giftId;
+                const giftName = checkbox.dataset.giftName.toLowerCase();
+                const quantity = checkbox.closest('.gift-item').querySelector('.gift-quantity').value;
+                if (parseInt(quantity, 10) > 0) {
+                    giftsLines.push(`necesito ${giftId} ${quantity} cajas de ${giftName}`);
+                }
+            });
+
+            if (giftsLines.length > 0) {
+                clientLine += '\n' + giftsLines.join('\n');
+            }
+            finalOutput.push(clientLine);
+        });
+        
+        const textToCopy = finalOutput.join('\n\n');
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            if (copyGiftsBtn) {
+                const originalText = copyGiftsBtn.querySelector('span').textContent;
+                copyGiftsBtn.querySelector('span').textContent = '¡Copiado!';
+                copyGiftsBtn.classList.add('btn-success');
+                setTimeout(() => {
+                    copyGiftsBtn.querySelector('span').textContent = originalText;
+                    copyGiftsBtn.classList.remove('btn-success');
+                    closeGiftsModal();
+                }, 1500);
+            }
+        }).catch(err => {
+            console.error('Error al copiar el texto: ', err);
+            alert('No se pudo copiar el texto.');
+        });
+    }
+
+    async function geocodeAddress(address) {
+        const fullAddress = `${address}, Spain`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
+        } catch (error) {
+            console.error("Error de geocodificación:", error);
+            return null;
+        }
+    }
+
+    async function showMapWithSelectedClients() {
+        const selectedClientsData = clientes.filter(c => selectedClients.has(c.codigo));
+        if (selectedClientsData.length === 0) return;
+
+        if (mapModal) mapModal.classList.remove('hidden');
+        if (routeDetails) routeDetails.innerHTML = '🌍 Geocodificando direcciones...';
+
+        if (!map) {
+            map = L.map('map-container').setView([41.5, 2.0], 9);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            markersLayer.addTo(map);
+        }
+        setTimeout(() => map.invalidateSize(), 100);
+
+        markersLayer.clearLayers();
+        const allMarkers = [];
+        let foundCount = 0;
+
+        for (const [index, cliente] of selectedClientsData.entries()) {
+            const address = getCleanAddressForMap(cliente);
+            if (routeDetails) routeDetails.innerHTML = `Buscando ${index + 1}/${selectedClientsData.length}: <em>${address}</em>`;
+            const coords = await geocodeAddress(address);
+            if (coords) {
+                foundCount++;
+                const marker = L.marker([coords.lat, coords.lon]);
+                marker.bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
+                allMarkers.push(marker);
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        if (routeDetails) routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
+        allMarkers.forEach(m => markersLayer.addLayer(m));
+        if (allMarkers.length > 0) map.fitBounds(new L.featureGroup(allMarkers).getBounds().pad(0.3));
+    }
+
+    function closeMapModal() {
+        if (mapModal) mapModal.classList.add('hidden');
+    }
+    
+    function exportar(clientsToExport, type, filename) {
+        if(clientsToExport.length === 0) {
+            alert("No hay datos para exportar.");
+            return;
+        }
+    
+        if (type === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(16).text(filename, 14, 22);
+            doc.setFontSize(10);
+            const lineas = clientsToExport.map(c => `${c.codigo} | ${c.cadena} | ${c.nombre}, ${c.poblacion}`);
+            doc.text(lineas, 14, 32);
+            doc.save(`${filename}.pdf`);
+        } else if (type === 'excel') {
+            const data = clientsToExport.map(c => ({
+                'Código': c.codigo, 
+                'Ruta': c.plan, 
+                'Cadena': c.cadena, 
+                'Nombre': c.nombre, 
+                'Población': c.poblacion, 
+                'Medalla': c.medalla, 
+                'Días Visita': c.diaVisita
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+            XLSX.writeFile(workbook, `${filename}.xlsx`);
+        } else if (type === 'copy') {
+            const textToCopy = clientsToExport.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}`).join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                if (copySelectionBtn) {
+                    const originalContent = copySelectionBtn.innerHTML;
+                    copySelectionBtn.innerHTML = '<span>¡Copiado!</span>';
+                    copySelectionBtn.classList.add('btn-success');
+                    setTimeout(() => {
+                        copySelectionBtn.innerHTML = originalContent;
+                        copySelectionBtn.classList.remove('btn-success');
+                    }, 2000);
+                }
+            });
         }
     }
 
@@ -256,9 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function mostrarRutasDelDia(nombreDia) {
             activeDay = nombreDia;
-            if (diasNav) {
-                diasNav.querySelectorAll('.dia-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.dia === nombreDia));
-            }
+            if (diasNav) diasNav.querySelectorAll('.dia-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.dia === nombreDia));
             if (rutasContent) rutasContent.innerHTML = '';
             currentDailyClients = [];
 
@@ -277,24 +780,18 @@ document.addEventListener('DOMContentLoaded', () => {
             planesOrdenados.forEach(plan => {
                 const clientesDelPlan = rutasDelDia[plan];
                 currentDailyClients.push(...clientesDelPlan);
-                
                 const rutaCard = document.createElement('div');
                 rutaCard.className = 'ruta-card';
-                const cardTitle = document.createElement('h3');
-                cardTitle.textContent = `Ruta: ${plan}`;
-                rutaCard.appendChild(cardTitle);
-                const clientListUl = document.createElement('ul');
-                clientesDelPlan.sort((a,b) => a.codigo.localeCompare(b.codigo)).forEach(cliente => {
-                    const clientLi = document.createElement('li');
-                    const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
-                    clientLi.innerHTML = `
-                        <span class="client-code">${cliente.codigo}</span>
-                        <div class="client-details"><strong>${cliente.cadena}</strong> - ${cliente.nombre}, <em>${cliente.poblacion}</em></div>
-                        <span class="client-medalla medalla-${medallaClass}">${cliente.medalla}</span>
-                    `;
-                    clientListUl.appendChild(clientLi);
-                });
-                rutaCard.appendChild(clientListUl);
+                rutaCard.innerHTML = `<h3>Ruta: ${plan}</h3><ul>${
+                    clientesDelPlan.sort((a,b) => a.codigo.localeCompare(b.codigo)).map(cliente => {
+                        const medallasFinales = getMedalEmojis(cliente);
+                        return `<li>
+                            <span class="client-code">${cliente.codigo}</span>
+                            <div class="client-details"><strong>${cliente.cadena}</strong> - ${cliente.nombre}, <em>${cliente.poblacion}</em></div>
+                            <span class="client-medalla">${medallasFinales}</span>
+                        </li>`;
+                    }).join('')
+                }</ul>`;
                 if (rutasContent) rutasContent.appendChild(rutaCard);
             });
             
@@ -310,437 +807,31 @@ document.addEventListener('DOMContentLoaded', () => {
             dayCarouselBtnRight.disabled = scrollLeft >= maxScrollLeft - 1;
         }
 
-        if(dayCarouselBtnLeft) dayCarouselBtnLeft.addEventListener('click', () => { diasNav.scrollBy({ left: -250, behavior: 'smooth' }); });
-        if(dayCarouselBtnRight) dayCarouselBtnRight.addEventListener('click', () => { diasNav.scrollBy({ left: 250, behavior: 'smooth' }); });
+        if(dayCarouselBtnLeft) dayCarouselBtnLeft.addEventListener('click', () => diasNav.scrollBy({ left: -250, behavior: 'smooth' }));
+        if(dayCarouselBtnRight) dayCarouselBtnRight.addEventListener('click', () => diasNav.scrollBy({ left: 250, behavior: 'smooth' }));
+        if(diasNav) diasNav.addEventListener('scroll', () => setTimeout(updateDayCarouselButtons, 150));
         
-        let dayScrollTimeout;
-        if(diasNav) diasNav.addEventListener('scroll', () => {
-            clearTimeout(dayScrollTimeout);
-            dayScrollTimeout = setTimeout(updateDayCarouselButtons, 150);
-        });
-        
-        if(routeCardBtnLeft) routeCardBtnLeft.addEventListener('click', () => {
-            if (!rutasContent) return;
-            const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
-            rutasContent.scrollBy({ left: -(cardWidth + 15), behavior: 'smooth' });
-        });
-        if(routeCardBtnRight) routeCardBtnRight.addEventListener('click', () => {
-            if (!rutasContent) return;
-            const cardWidth = rutasContent.querySelector('.ruta-card')?.offsetWidth || 300;
-            rutasContent.scrollBy({ left: cardWidth + 15, behavior: 'smooth' });
-        });
-        
-        let routeScrollTimeout;
-        if(rutasContent) rutasContent.addEventListener('scroll', () => {
-            clearTimeout(routeScrollTimeout);
-            routeScrollTimeout = setTimeout(updateRouteCarouselButtons, 150);
-        });
+        if(routeCardBtnLeft) routeCardBtnLeft.addEventListener('click', () => rutasContent.scrollBy({ left: -(rutasContent.querySelector('.ruta-card')?.offsetWidth || 300) - 15, behavior: 'smooth' }));
+        if(routeCardBtnRight) routeCardBtnRight.addEventListener('click', () => rutasContent.scrollBy({ left: (rutasContent.querySelector('.ruta-card')?.offsetWidth || 300) + 15, behavior: 'smooth' }));
+        if(rutasContent) rutasContent.addEventListener('scroll', () => setTimeout(updateRouteCarouselButtons, 150));
 
         if(diasNav) diasNav.addEventListener('click', e => {
-            if (e.target.classList.contains('dia-nav-btn')) {
-                mostrarRutasDelDia(e.target.dataset.dia);
-            }
+            if (e.target.classList.contains('dia-nav-btn')) mostrarRutasDelDia(e.target.dataset.dia);
         });
 
         mostrarRutasDelDia('Lunes');
         setTimeout(updateDayCarouselButtons, 100);
     }
-    
-    const applyTheme = (theme) => {
-        document.body.classList.toggle('dark-mode', theme === 'dark');
-        if (themeToggle) {
-            const sunIcon = themeToggle.querySelector('.sun');
-            const moonIcon = themeToggle.querySelector('.moon');
-            if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
-            if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
-        }
-    };
-    
-    function openPreviewModal() {
-        if (selectedClients.size === 0) return;
-        const clientsToShow = clientes.filter(c => selectedClients.has(c.codigo));
-        if (modalClientList) modalClientList.innerHTML = '';
-        clientsToShow.forEach(cliente => {
-            const clientElement = document.createElement('p');
-            clientElement.textContent = `${cliente.codigo} ${cliente.cadena} (${cliente.medalla}) - ${cliente.nombre}, ${cliente.poblacion}`;
-            if (modalClientList) modalClientList.appendChild(clientElement);
-        });
-        if (modalClientCount) modalClientCount.textContent = `Total: ${clientsToShow.length} clientes seleccionados`;
-        if (previewModal) previewModal.classList.remove('hidden');
-    }
 
-    function closePreviewModal() {
-        if (previewModal) previewModal.classList.add('hidden');
-    }
-
-    function mostrarClientes(clientesAMostrar) {
-        if (clientList) clientList.innerHTML = '';
-        if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
-        
-        clientesAMostrar.forEach(cliente => {
-            const isSelected = selectedClients.has(cliente.codigo);
-            const line = document.createElement('div');
-            line.className = 'client-line';
-            line.classList.toggle('selected', isSelected);
-    
-            const medallaClass = (cliente.medalla || 'default').toLowerCase().replace(/\s/g, '-');
-            
-            line.innerHTML = `
-                <label class="checkbox-container" for="check-${cliente.codigo}">
-                    <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
-                </label>
-                <div class="client-info">
-                    <strong>${cliente.cadena} (${cliente.codigo})</strong>
-                    <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
-                </div>
-                <span class="client-medalla medalla-${medallaClass}">${cliente.medalla}</span>
-            `;
-    
-            const checkboxContainer = line.querySelector('.checkbox-container');
-            if(checkboxContainer) {
-                checkboxContainer.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const checkbox = line.querySelector('input[type="checkbox"]');
-                    const codigo = checkbox.dataset.codigo;
-                    if (e.target.nodeName !== 'INPUT') {
-                        checkbox.checked = !checkbox.checked;
-                    }
-                    checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
-                    line.classList.toggle('selected', checkbox.checked);
-                    updateSelectionUI();
-                });
-            }
-
-            line.addEventListener('click', (e) => {
-                if (e.target.closest('.checkbox-container')) {
-                    return;
-                }
-                const checkbox = line.querySelector('input[type="checkbox"]');
-                checkbox.checked = !checkbox.checked;
-                const codigo = checkbox.dataset.codigo;
-                checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
-                line.classList.toggle('selected', checkbox.checked);
-                updateSelectionUI();
-            });
-    
-            if (clientList) clientList.appendChild(line);
-        });
-        currentFilteredClients = clientesAMostrar;
-        updateSelectionUI();
-    }
-
-    function updateSelectionUI() {
-        const selectedCount = selectedClients.size;
-        if (clientCount) clientCount.textContent = `Mostrando ${currentFilteredClients.length} de ${clientes.length} clientes | (${selectedCount} sel.)`;
-        const hasSelection = selectedCount > 0;
-        
-        const actionButtons = [previewSelectionBtn, exportPdfBtn, exportExcelBtn, copySelectionBtn, openMapBtn];
-        actionButtons.forEach(btn => {
-            if (btn) btn.disabled = !hasSelection;
-        });
-
-        if (createMapBtn) {
-            if (hasSelection) {
-                createMapBtn.classList.remove('disabled');
-                const clientsToMap = clientes.filter(c => selectedClients.has(c.codigo));
-                const mapsUrl = generarUrlDeNavegacion(clientsToMap);
-                createMapBtn.href = mapsUrl;
-            } else {
-                createMapBtn.classList.add('disabled');
-                createMapBtn.href = '#';
-            }
-        }
-
-        if (selectAllCheckbox) {
-            if (currentFilteredClients.length > 0) {
-                const allVisibleSelected = currentFilteredClients.every(c => selectedClients.has(c.codigo));
-                selectAllCheckbox.checked = allVisibleSelected;
-                selectAllCheckbox.indeterminate = !allVisibleSelected && currentFilteredClients.some(c => selectedClients.has(c.codigo));
-            } else {
-                selectAllCheckbox.checked = false;
-                selectAllCheckbox.indeterminate = false;
-            }
-        }
-
-        if (resetBtn) {
-            const hasFilters = searchBox.value || rutaFilter.value || cadenaFilter.value || medallaFilter.value;
-            resetBtn.classList.toggle('active-reset', hasSelection || hasFilters);
-        }
-    }
-
-    function aplicarFiltros() {
-        if(searchResultInfo) searchResultInfo.classList.add('hidden');
-        if(rutaFilter) rutaFilter.classList.remove('highlight-select');
-        if(diasFilterContainer) {
-            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
-        }
-
-        const searchTerm = searchBox.value.toLowerCase().trim();
-        const rutaSeleccionada = rutaFilter.value;
-        const cadenaSeleccionada = cadenaFilter.value;
-        const medallaSeleccionada = medallaFilter.value;
-        const sortOption = sortSelect.value;
-
-        let clientesFiltrados = clientes.filter(cliente => {
-            const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
-            const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
-            const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
-            const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
-            const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
-            const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
-            return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay;
-        });
-        
-        if (clientesFiltrados.length === 1 && searchTerm) {
-            const clienteUnico = clientesFiltrados[0];
-            const rutaCliente = clienteUnico.plan;
-
-            if (searchResultInfo) {
-                searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
-                searchResultInfo.classList.remove('hidden');
-            }
-            if (rutaFilter) {
-                rutaFilter.value = rutaCliente;
-                rutaFilter.classList.add('highlight-select');
-            }
-            
-            gestionarFiltroDias();
-
-            const diasVisita = [...new Set(clienteUnico.diaVisita.match(/[LMXJVS]/g) || [])];
-            if (diasFilterContainer) {
-                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => {
-                    if (diasVisita.includes(btn.dataset.day)) {
-                        btn.classList.add('highlight');
-                    }
-                });
-            }
-        }
-
-        const sortFunctions = {
-            'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
-            'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
-            'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
-        };
-        clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
-        
-        mostrarClientes(clientesFiltrados);
-    }
-    
-    function gestionarFiltroDias() {
-        if (!diasFilterContainer) return;
-        const rutaSeleccionada = rutaFilter.value;
-        diasFilterContainer.innerHTML = '';
-        diasFilterContainer.classList.add('hidden');
-        if (rutaSeleccionada) {
-            const dias = ['L', 'M', 'X', 'J', 'V', 'S'];
-            const label = document.createElement('span');
-            label.textContent = "Filtrar por día:";
-            label.style.fontWeight = 'bold';
-            diasFilterContainer.appendChild(label);
-            dias.forEach(dia => {
-                const btn = document.createElement('button');
-                btn.className = 'dia-btn';
-                btn.textContent = dia;
-                btn.dataset.day = dia;
-                if (dia === activeDayFilter) btn.classList.add('active');
-                btn.addEventListener('click', onDiaButtonClick);
-                diasFilterContainer.appendChild(btn);
-            });
-            diasFilterContainer.classList.remove('hidden');
-        } else {
-            activeDayFilter = null;
-        }
-    }
-
-    function onDiaButtonClick(event) {
-        const clickedButton = event.target;
-        const day = clickedButton.dataset.day;
-        if (clickedButton.classList.contains('active')) {
-            activeDayFilter = null;
-            clickedButton.classList.remove('active');
-        } else {
-            if (diasFilterContainer) {
-                diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('active'));
-            }
-            clickedButton.classList.add('active');
-            activeDayFilter = day;
-        }
-        aplicarFiltros();
-    }
-
-    function limpiarFiltros() {
-        if (searchBox) searchBox.value = '';
-        if (rutaFilter) rutaFilter.value = '';
-        if (cadenaFilter) cadenaFilter.value = '';
-        if (medallaFilter) medallaFilter.value = '';
-        if (sortSelect) sortSelect.selectedIndex = 0;
-        activeDayFilter = null;
-        selectedClients.clear();
-        history.pushState(null, '', window.location.pathname);
-        gestionarFiltroDias();
-        aplicarFiltros();
-    }
-
-    function exportar(clients, type, filename) {
-        if(clients.length === 0) return;
-    
-        if (type === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(16).text(filename, 14, 22);
-            doc.setFontSize(10);
-            const lineas = clients.map(c => `${c.codigo} | ${c.cadena} | ${c.nombre}, ${c.poblacion}`);
-            doc.text(lineas, 14, 32);
-            doc.save(`${filename}.pdf`);
-        } else if (type === 'excel') {
-            const data = clients.map(c => ({
-                'Código': c.codigo, 'Ruta': c.plan, 'Cadena': c.cadena, 'Nombre': c.nombre, 'Población': c.poblacion, 'Medalla': c.medalla, 'Días Visita': c.diaVisita
-            }));
-            const worksheet = XLSX.utils.json_to_sheet(data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
-            XLSX.writeFile(workbook, `${filename}.xlsx`);
-        } else if (type === 'copy') {
-            const textToCopy = clients.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}`).join('\n');
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const button = document.getElementById('copy-selection-btn');
-                if (button) {
-                    const originalContent = button.innerHTML;
-                    button.innerHTML = '<span>¡Copiado!</span>';
-                    setTimeout(() => button.innerHTML = originalContent, 2000);
-                }
-            });
-        }
-    }
-    
-    function generarUrlDeNavegacion(clients) {
-        const baseUrl = 'https://www.google.com/maps/dir/';
-        let params = new URLSearchParams();
-        params.append('api', '1');
-        params.append('travelmode', 'driving');
-
-        const addresses = clients.map(client => getCleanAddressForMap(client));
-        
-        if (addresses.length === 1) {
-            params.append('destination', addresses[0]);
-        } else {
-            const destination = addresses.pop();
-            const waypoints = addresses.join('|');
-            params.append('destination', destination);
-            params.append('waypoints', waypoints);
-        }
-
-        return `${baseUrl}?${params.toString()}`;
-    }
-
-    function aplicarFiltrosDesdeURL() {
-        const params = new URLSearchParams(window.location.search);
-        
-        if (searchBox) searchBox.value = params.get('q') || '';
-        if (rutaFilter) rutaFilter.value = params.get('ruta') || '';
-        if (cadenaFilter) cadenaFilter.value = params.get('cadena') || '';
-        if (medallaFilter) medallaFilter.value = params.get('medalla') || '';
-        if (sortSelect) sortSelect.value = params.get('sort') || 'codigo-asc';
-        
-        if (rutaFilter && rutaFilter.value) {
-            gestionarFiltroDias();
-            const diaParam = params.get('dia');
-            if (diaParam) {
-                const diaBtn = diasFilterContainer.querySelector(`.dia-btn[data-day="${diaParam}"]`);
-                if (diaBtn) {
-                    activeDayFilter = diaParam;
-                    diaBtn.classList.add('active');
-                }
-            }
-        }
-    }
-
-    // --- 5. LÓGICA DEL MAPA (GEOCODIFICACIÓN) ---
-    let map = null;
-    const markersLayer = L.layerGroup();
-
-    async function geocodeAddress(address) {
-        const fullAddress = `${address}, Spain`;
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (data && data.length > 0) {
-                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
-            }
-            return null;
-        } catch (error) {
-            console.error("Error de geocodificación:", error);
-            return null;
-        }
-    }
-
-    async function showMapWithSelectedClients() {
-        const selectedClientsData = clientes.filter(c => selectedClients.has(c.codigo));
-        if (selectedClientsData.length === 0) {
-            alert('No hay clientes seleccionados para mostrar.');
-            return;
-        }
-
-        if (mapModal) mapModal.classList.remove('hidden');
-        if (routeDetails) routeDetails.innerHTML = '🌍 Geocodificando direcciones...';
-
-        if (!map) {
-            map = L.map('map-container').setView([41.5, 2.0], 9);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            markersLayer.addTo(map);
-        }
-        setTimeout(() => map.invalidateSize(), 100);
-
-        markersLayer.clearLayers();
-        const allMarkers = [];
-        let foundCount = 0;
-
-        for (const [index, cliente] of selectedClientsData.entries()) {
-            const address = getCleanAddressForMap(cliente);
-            if (routeDetails) {
-                routeDetails.innerHTML = `Buscando ${index + 1}/${selectedClientsData.length}:<br><em>${address}</em>`;
-            }
-
-            const coords = await geocodeAddress(address);
-            if (coords) {
-                foundCount++;
-                const marker = L.marker([coords.lat, coords.lon]);
-                marker.bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
-                allMarkers.push(marker);
-            }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        if (routeDetails) {
-            routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
-        }
-        
-        allMarkers.forEach(m => markersLayer.addLayer(m));
-
-        if (allMarkers.length > 0) {
-            const group = new L.featureGroup(allMarkers);
-            map.fitBounds(group.getBounds().pad(0.3));
-        }
-    }
-
-    function closeMapModal() {
-        if (mapModal) mapModal.classList.add('hidden');
-    }
-
-
-    // --- 6. INICIALIZACIÓN ---
     function init() {
         const rutas = [...new Set(clientes.map(c => c.plan))].sort();
         const cadenas = [...new Set(clientes.map(c => c.cadena))].sort();
         const medallas = [...new Set(clientes.map(c => c.medalla))].sort();
         
-        if (rutaFilter) rutas.forEach(ruta => rutaFilter.add(new Option(ruta, ruta)));
-        if (cadenaFilter) cadenas.forEach(cadena => cadenaFilter.add(new Option(cadena, cadena)));
-        if (medallaFilter) medallas.forEach(medalla => medallaFilter.add(new Option(medalla, medalla)));
+        const populate = (select, items) => { if (select) items.forEach(item => select.add(new Option(item, item))); };
+        populate(rutaFilter, rutas);
+        populate(cadenaFilter, cadenas);
+        populate(medallaFilter, medallas);
         
         const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         applyTheme(savedTheme);
@@ -748,28 +839,22 @@ document.addEventListener('DOMContentLoaded', () => {
         aplicarFiltrosDesdeURL();
         aplicarFiltros();
 
-        // Listeners de eventos
         if (toggleViewBtn) toggleViewBtn.addEventListener('click', () => setView(currentView === 'filters' ? 'daily' : 'filters'));
-        
         if (themeToggle) themeToggle.addEventListener('click', () => {
             const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         });
         
-        window.addEventListener('scroll', () => {
-            if(scrollToTopBtn) scrollToTopBtn.classList.toggle('hidden', window.scrollY <= 300)
-        });
+        window.addEventListener('scroll', () => scrollToTopBtn && scrollToTopBtn.classList.toggle('hidden', window.scrollY <= 300));
         if(scrollToTopBtn) scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        if (selectAllCheckbox) selectAllCheckbox.addEventListener('change', (e) => {
-            currentFilteredClients.forEach(cliente => {
-                e.target.checked ? selectedClients.add(cliente.codigo) : selectedClients.delete(cliente.codigo);
-            });
-            mostrarClientes(currentFilteredClients);
+        if (selectAllCheckbox) selectAllCheckbox.addEventListener('change', e => {
+            currentFilteredClients.forEach(cliente => e.target.checked ? selectedClients.add(cliente.codigo) : selectedClients.delete(cliente.codigo));
+            updateSelectionUI();
         });
         
-        [searchBox, rutaFilter, cadenaFilter, medallaFilter, sortSelect].forEach(el => {
+        [searchBox, rutaFilter, cadenaFilter, medallaFilter, franquiciaFilter, sortSelect].forEach(el => {
             if(el) el.addEventListener('input', () => {
                 if (el.id === 'ruta-filter') {
                     activeDayFilter = null; 
@@ -785,19 +870,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (copySelectionBtn) copySelectionBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'copy'));
         if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'pdf', 'Seleccion_Clientes'));
         if (exportExcelBtn) exportExcelBtn.addEventListener('click', () => exportar(clientes.filter(c => selectedClients.has(c.codigo)), 'excel', 'Seleccion_Clientes'));
-        
-        if(exportExcelDayBtn) exportExcelDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'excel', `Plan_del_${activeDay}`));
-
-        if(closeModalBtn) closeModalBtn.addEventListener('click', closePreviewModal);
-        if(previewModal) previewModal.addEventListener('click', (e) => {
-            if (e.target === previewModal) closePreviewModal();
-        });
-        
-        // Listeners para el mapa
+        if (exportExcelDayBtn) exportExcelDayBtn.addEventListener('click', () => exportar(currentDailyClients, 'excel', `Plan_del_${activeDay}`));
         if (openMapBtn) openMapBtn.addEventListener('click', showMapWithSelectedClients);
+        if (manageGiftsBtn) manageGiftsBtn.addEventListener('click', openGiftsModal);
+        
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closePreviewModal);
         if (closeMapModalBtn) closeMapModalBtn.addEventListener('click', closeMapModal);
-        if (mapModal) mapModal.addEventListener('click', (e) => {
+        if (closeGiftsModalBtn) closeGiftsModalBtn.addEventListener('click', closeGiftsModal);
+        if (copyGiftsBtn) copyGiftsBtn.addEventListener('click', copyGiftsOrder);
+
+        window.addEventListener('click', (e) => {
+            if (e.target === previewModal) closePreviewModal();
             if (e.target === mapModal) closeMapModal();
+            if (e.target === giftsModal) closeGiftsModal();
         });
     }
 
