@@ -146,11 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
         "Platino": "💎",
         "Plata": "🥈",
         "Bronce": "🥉",
-        "default": "⚪" 
+        "default": "⚪"
     };
     
     const FRANQUICIA_EMOJI = '🌟';
-
 
     const REGALOS_DISPONIBLES = [
         { id: '6131233', nombre: 'Gorras' },
@@ -168,6 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeDay = 'Lunes';
     let map = null;
     const markersLayer = L.layerGroup();
+
+    const geocodeCache = new Map(JSON.parse(sessionStorage.getItem('geocodeCache') || '[]'));
+
+    function saveCache() {
+        sessionStorage.setItem('geocodeCache', JSON.stringify(Array.from(geocodeCache.entries())));
+    }
 
     const mainTitle = document.getElementById('main-title');
     const toggleViewBtn = document.getElementById('toggle-view-btn');
@@ -272,13 +277,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function aplicarFiltros() {
+        const searchTerm = searchBox.value.toLowerCase().trim();
+
+        // --- CORRECCIÓN DEFINITIVA ---
+        // Si el buscador está vacío, nos aseguramos de que el desplegable de ruta 
+        // no se quede "atascado" con un valor de una búsqueda anterior.
+        if (!searchTerm && rutaFilter.classList.contains('highlight-select')) {
+            rutaFilter.value = '';
+        }
+
         if(searchResultInfo) searchResultInfo.classList.add('hidden');
         if(rutaFilter) rutaFilter.classList.remove('highlight-select');
         if(diasFilterContainer) {
             diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
         }
 
-        const searchTerm = searchBox.value.toLowerCase().trim();
         const rutaSeleccionada = rutaFilter.value;
         const cadenaSeleccionada = cadenaFilter.value;
         const medallaSeleccionada = medallaFilter.value;
@@ -304,14 +317,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (clientesFiltrados.length === 1 && searchTerm) {
             const clienteUnico = clientesFiltrados[0];
-            const rutaCliente = clienteUnico.plan;
-
+            const medallasEmoji = getMedalEmojis(clienteUnico);
+            
             if (searchResultInfo) {
-                searchResultInfo.innerHTML = `Cliente <strong>${clienteUnico.nombre}</strong> pertenece a la ruta: <strong>${rutaCliente}</strong>`;
+                searchResultInfo.innerHTML = `
+                    <span title="Ruta">🗺️ <strong>${clienteUnico.plan}</strong></span>
+                    <span class="info-separator">|</span>
+                    <span title="Medalla">${medallasEmoji} <strong>${clienteUnico.medalla}</strong></span>
+                    <span class="info-separator">|</span>
+                    <span title="Días de Visita">📅 <strong>${clienteUnico.diaVisita}</strong></span>
+                `;
                 searchResultInfo.classList.remove('hidden');
             }
+
             if (rutaFilter) {
-                rutaFilter.value = rutaCliente;
+                rutaFilter.value = clienteUnico.plan;
                 rutaFilter.classList.add('highlight-select');
             }
             
@@ -478,13 +498,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function generarUrlDeNavegacion(clients) {
         if (clients.length === 0) return '#';
-        // CORRECCIÓN 1: Se ha cambiado la URL base por la correcta para Google Maps Directions.
-        // La URL original ('https://www.google.com/maps/dir/') no es un formato estándar.
-        // El nuevo formato 'https://www.google.com/maps/dir/' permite crear una ruta con múltiples destinos.
-        // Se usa '//' para indicar que no hay un punto de partida, los clientes son los destinos.
         const baseUrl = 'https://www.google.com/maps/dir/';
-        const addresses = clients.map(client => encodeURIComponent(getCleanAddressForMap(client)));
-        return baseUrl + '/' + addresses.join('/');
+        const addresses = clients.map(client =>
+            encodeURIComponent(getCleanAddressForMap(client))
+        ).join('/');
+        return baseUrl + addresses;
     }
 
     function aplicarFiltrosDesdeURL() {
@@ -501,8 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
             gestionarFiltroDias();
             const diaParam = params.get('dia');
             if (diaParam) {
-                // CORRECCIÓN 2: Se han añadido comillas al selector de atributo `[data-day="${diaParam}"]`.
-                // Sin las comillas, es una sintaxis de selector inválida y causa un error.
                 const diaBtn = diasFilterContainer.querySelector(`.dia-btn[data-day="${diaParam}"]`);
                 if (diaBtn) {
                     activeDayFilter = diaParam;
@@ -617,13 +633,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function geocodeAddress(address) {
+        if (geocodeCache.has(address)) {
+            return geocodeCache.get(address);
+        }
+
         const fullAddress = `${address}, Spain`;
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`;
+        
         try {
             const response = await fetch(url);
-            if (!response.ok) return null;
+            if (!response.ok) {
+                geocodeCache.set(address, null); 
+                saveCache();
+                return null;
+            }
             const data = await response.json();
-            return (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
+            const coords = (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
+            
+            geocodeCache.set(address, coords);
+            saveCache();
+            return coords;
         } catch (error) {
             console.error("Error de geocodificación:", error);
             return null;
@@ -635,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedClientsData.length === 0) return;
 
         if (mapModal) mapModal.classList.remove('hidden');
-        if (routeDetails) routeDetails.innerHTML = '🌍 Geocodificando direcciones...';
+        if (routeDetails) routeDetails.innerHTML = '🌍 Preparando mapa...';
 
         if (!map) {
             map = L.map('map-container').setView([41.5, 2.0], 9);
@@ -648,24 +677,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
         markersLayer.clearLayers();
         const allMarkers = [];
+        const uncachedClients = [];
         let foundCount = 0;
 
-        for (const [index, cliente] of selectedClientsData.entries()) {
+        if (routeDetails) routeDetails.innerHTML = '🔍 Comprobando caché de ubicaciones...';
+        for (const cliente of selectedClientsData) {
             const address = getCleanAddressForMap(cliente);
-            if (routeDetails) routeDetails.innerHTML = `Buscando ${index + 1}/${selectedClientsData.length}: <em>${address}</em>`;
-            const coords = await geocodeAddress(address);
-            if (coords) {
-                foundCount++;
-                const marker = L.marker([coords.lat, coords.lon]);
-                marker.bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
-                allMarkers.push(marker);
+            if (geocodeCache.has(address)) {
+                const coords = geocodeCache.get(address);
+                if (coords) {
+                    foundCount++;
+                    const marker = L.marker([coords.lat, coords.lon]).bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
+                    allMarkers.push(marker);
+                    markersLayer.addLayer(marker);
+                }
+            } else {
+                uncachedClients.push(cliente);
             }
-            await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
-        if (routeDetails) routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
-        allMarkers.forEach(m => markersLayer.addLayer(m));
-        if (allMarkers.length > 0) map.fitBounds(new L.featureGroup(allMarkers).getBounds().pad(0.3));
+        if (allMarkers.length > 0) {
+            map.fitBounds(new L.featureGroup(allMarkers).getBounds().pad(0.3));
+        }
+
+        if (uncachedClients.length === 0) {
+            if (routeDetails) routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones en la caché.`;
+            return;
+        }
+
+        for (const [index, cliente] of uncachedClients.entries()) {
+            const address = getCleanAddressForMap(cliente);
+            if (routeDetails) routeDetails.innerHTML = `🌍 Geocodificando ${index + 1}/${uncachedClients.length}: <em>${address}</em> (esperando 1s)`;
+            
+            const coords = await geocodeAddress(address);
+
+            if (coords) {
+                foundCount++;
+                const marker = L.marker([coords.lat, coords.lon]).bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
+                allMarkers.push(marker);
+                markersLayer.addLayer(marker);
+            }
+            
+            if (allMarkers.length > 0) {
+                map.fitBounds(new L.featureGroup(allMarkers).getBounds().pad(0.3));
+            }
+            
+            if (index < uncachedClients.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        if (routeDetails) routeDetails.innerHTML = `✅ Proceso finalizado. Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
     }
 
     function closeMapModal() {
