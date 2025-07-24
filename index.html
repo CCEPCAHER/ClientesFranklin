@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rutas zona Franklin</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
     
-    <meta name="theme-color" content="#007bff"/>
+    <meta name="theme-color" content="#5e72e4"/>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
     
@@ -48,7 +48,12 @@
             <select id="ruta-filter"><option value="">Todas las Rutas</option></select>
             <select id="cadena-filter"><option value="">Todas las Cadenas</option></select>
             <select id="medalla-filter"><option value="">Todas las Medallas</option></select>
-            <button type="button" id="reset-btn" title="Limpiar todos los filtros">Limpiar</button>
+            <select id="franquicia-filter">
+                <option value="">Todas las Tipologías</option>
+                <option value="si">Solo Franquicias</option>
+                <option value="no">Excluir Franquicias</option>
+            </select>
+            <button type="button" id="reset-btn" title="Limpiar filtros y selección">Limpiar</button>
         </form>
 
         <div id="dias-filter-container" class="dias-container hidden"></div>
