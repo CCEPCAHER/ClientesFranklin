@@ -9,12 +9,15 @@
     <meta name="theme-color" content="#5e72e4"/>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
-    
+
+    <!-- Leaflet / jsPDF / XLSX -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- --- NUEVO: para icons tel/wa (opcional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 <body>
 
@@ -189,6 +192,59 @@
         </div>
     </div>
 </div>
+
+<!-- --- NUEVO: MODAL EDICIÓN/ALTA CLIENTE (solo admin) --- -->
+<div id="edit-client-modal" class="hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="edit-client-title">Editar Cliente</h2>
+      <button type="button" id="close-edit-modal-btn" title="Cerrar">×</button>
+    </div>
+    <form id="edit-client-form" class="modal-body">
+        <input type="hidden" name="_isNew" id="ec_isNew">
+        <label>Código
+            <input type="text" name="codigo" id="ec_codigo" required>
+        </label>
+        <label>Ruta
+            <input type="text" name="plan" id="ec_plan" required>
+        </label>
+        <label>Cadena
+            <input type="text" name="cadena" id="ec_cadena" required>
+        </label>
+        <label>Nombre
+            <input type="text" name="nombre" id="ec_nombre" required>
+        </label>
+        <label>Población
+            <input type="text" name="poblacion" id="ec_poblacion" required>
+        </label>
+        <label>Medalla
+            <input type="text" name="medalla" id="ec_medalla" required>
+        </label>
+        <label>Días Visita
+            <input type="text" name="diaVisita" id="ec_diaVisita" required>
+        </label>
+        <!-- NUEVOS CAMPOS -->
+        <label>Teléfono
+            <input type="text" name="telefono" id="ec_telefono">
+        </label>
+        <label>Encargado 1
+            <input type="text" name="encargado1" id="ec_encargado1">
+        </label>
+        <label>Encargado 2
+            <input type="text" name="encargado2" id="ec_encargado2">
+        </label>
+    </form>
+    <div class="modal-footer">
+      <button type="button" id="save-client-btn" class="action-btn btn-excel">Guardar</button>
+      <button type="button" id="delete-client-btn" class="action-btn btn-pdf hidden">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- --- NUEVO: botón flotante para crear cliente (solo admin) --- -->
+<button type="button" id="add-client-btn" class="admin-floating-btn hidden" title="Nuevo cliente">
+    <i class="fa fa-plus"></i>
+</button>
 
 <script src="app.js"></script>
 </body>
