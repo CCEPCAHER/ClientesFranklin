@@ -1,145 +1,185 @@
 document.addEventListener('DOMContentLoaded', () => {
+    'use strict';
 
-    const clientes = [
-        { "codigo": "8103539", "plan": "CAT21", "cadena": "Condis", "nombre": "De Catalunya, 24", "poblacion": "Aiguafreda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Carretera de Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8106896", "plan": "CAT21", "cadena": "Esclat", "nombre": "Crta. C-17, km 54,5", "poblacion": "Malla", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8109293", "plan": "CAT21", "cadena": "Consum Charter", "nombre": "Enric Prat de la Riba, 9", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8109298", "plan": "CAT21", "cadena": "Esclat", "nombre": "Manlleu, 117", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8109748", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Arquebisbe Alemany, 20", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8109750", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Torello · Mare de Deu dels Munts", "poblacion": "Vic", "medalla": "Bronce", "diaVisita": "1L-3L" },
-        { "codigo": "8109753", "plan": "CAT21", "cadena": "Supeco", "nombre": "Industria · Torello", "poblacion": "Vic", "medalla": "Oro Plus 2", "diaVisita": "1LV-2LV-3LV-4LV" },
-        { "codigo": "8109754", "plan": "CAT21", "cadena": "CARREFOUR MINI", "nombre": "La Llotja, 6 - Urb. El Sucre", "poblacion": "Vic", "medalla": "Oro Plus 4", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
-        { "codigo": "8109763", "plan": "CAT21", "cadena": "Consum", "nombre": "Josep Maria Sert, s/n", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8109766", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Psg. Generalitat, 44-46", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8109767", "plan": "CAT21", "cadena": "Esclat", "nombre": "Ripoll, 16", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8120832", "plan": "CAT21", "cadena": "CondisLife", "nombre": "C/Rector Tomas Vila, 27", "poblacion": "Sant Feliu de Codines", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8121085", "plan": "CAT21", "cadena": "Condis", "nombre": "Carretera de Barcelona, 10", "poblacion": "Moia", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8122213", "plan": "CAT21", "cadena": "CondisLife", "nombre": "C. Doctor Junyent, 2-5", "poblacion": "Vic", "medalla": "Bronce", "diaVisita": "2L-4L" },
-        { "codigo": "8124947", "plan": "CAT21", "cadena": "Esclat", "nombre": "Ctra. de Roda s/n", "poblacion": "Manlleu", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8134816", "plan": "CAT21", "cadena": "Coaliment Saludable", "nombre": "del Pare Gallissà  1-3", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8134942", "plan": "CAT21", "cadena": "Coaliment", "nombre": "Rambla Rambla de l’Hospital 17", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8105044", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Pl. del Pi, s/n", "poblacion": "Bellaterra", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8105762", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Avda. Catalunya, 25", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105763", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Santa Marcelina, 9", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105767", "plan": "CAT22", "cadena": "Condis", "nombre": "Can Pallares, s/n", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105768", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Avda. Canaletes, 11 local 2", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105769", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Avda. Catalunya, 66", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105771", "plan": "CAT22", "cadena": "Condis", "nombre": "Santa Marcelina, 17", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8108192", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Avda. Barbera, 238", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108195", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Rbl. Sabadell, 141", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108196", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Sol i Padris, 100", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108207", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Balmes, 29-31", "poblacion": "Sabadell", "medalla": "Bronce", "diaVisita": "1X-3X" },
-        { "codigo": "8108209", "plan": "CAT22", "cadena": "Condis", "nombre": "Calders, 190 - 192", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108211", "plan": "CAT22", "cadena": "Condis", "nombre": "Irlanda, 2 - Mdo. Merinals", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108213", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Les Valls, 26", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108216", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Ctra. Prats de Lluçanes, 180", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108220", "plan": "CAT22", "cadena": "Consum Charter", "nombre": "Almogavers, 17", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108263", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Psg. Almogavers, 6", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108265", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Industria, 34", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108266", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Manso, 80", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108502", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Rbl. Celler Cooperatiu, 115", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108503", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Salvador Espriu · Pau IV", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108508", "plan": "CAT22", "cadena": "Condis", "nombre": "Avda. Torreblanca, 2 - Mercado", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108509", "plan": "CAT22", "cadena": "Consum", "nombre": "Avda. Rius i Taulet, 49", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8108513", "plan": "CAT22", "cadena": "Hermanos Valencia", "nombre": "Avda. Cerdanyola, 6", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108522", "plan": "CAT22", "cadena": "Supercor Express", "nombre": "Lluis Domenech, 2 · Puig i Cadafalch 30", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8120749", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Avda Cerdanyola, 35", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1M-3M" },
-        { "codigo": "8124231", "plan": "CAT22", "cadena": "Esclat", "nombre": "Via Augusta, 103", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8124323", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "S. Ramon Penyafort, 3", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8124892", "plan": "CAT22", "cadena": "Consum Charter", "nombre": "Pasaje de las Moreras, 1", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8134280", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Plaza de Sant Pere, 5", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8134282", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Carrer de Vallseca, 130", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8135101", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "CL Valldoreix, 38", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8135408", "plan": "CAT22", "cadena": "Caprabo", "nombre": "AV  Lluis Companys i Jover, 40", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8138210", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "AV  CERDANYOLA, 8-10", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8138747", "plan": "CAT22", "cadena": "CondisLife", "nombre": "RO EUROPA 506", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8138878", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "CL Puig de la Rimila, 14-20", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8104054", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Catalunya, 42", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8104059", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Lloreda, 66-72", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8104102", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Avda. Catalunya, 45-47 (Lloreda)", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8104105", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Avda. Italia, 3-5", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8104158", "plan": "CAT23", "cadena": "Condis", "nombre": "Psg. Doctor Moragas, 234", "poblacion": "Barbera del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8104165", "plan": "CAT23", "cadena": "MI ALCAMPO", "nombre": "Josep Armengol, 15", "poblacion": "Barbera del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107213", "plan": "CAT23", "cadena": "CondisLife", "nombre": "Lleida, 27", "poblacion": "Montcada i Reixac", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8107214", "plan": "CAT23", "cadena": "Condis", "nombre": "Montiu, 12", "poblacion": "Montcada i Reixac", "medalla": "Bronce", "diaVisita": "1M-3M" },
-        { "codigo": "8107219", "plan": "CAT23", "cadena": "Gross Mercat", "nombre": "Pol. Ind. La Ferreria (Avda. La Ferreria)", "poblacion": "Montcada i Reixac", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108090", "plan": "CAT23", "cadena": "Condis", "nombre": "Rbl. de Sant Jordi, 113", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108101", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Nuestra Sra. dels Angels, 12", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8108748", "plan": "CAT23", "cadena": "Caprabo", "nombre": "Avda. Generalitat, 44 - 46", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8108749", "plan": "CAT23", "cadena": "Carrefour Market", "nombre": "Avda. Santa Coloma, 24-26", "poblacion": "Santa Coloma de Gramanet", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
-        { "codigo": "8108750", "plan": "CAT23", "cadena": "Carrefour Market", "nombre": "Rbl. de Sant Sebastia, 78-80", "poblacion": "Santa Coloma de Gramanet", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
-        { "codigo": "8108760", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Pallaresa, 92", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2L-4L" },
-        { "codigo": "8108761", "plan": "CAT23", "cadena": "Condis", "nombre": "Peru, 39", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108762", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Francesc Macia, 144-146", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108763", "plan": "CAT23", "cadena": "Condis", "nombre": "Psg. Lorenzo Serra, 45", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8108764", "plan": "CAT23", "cadena": "Condis", "nombre": "Mossen Cinto Verdaguer, 91", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8108765", "plan": "CAT23", "cadena": "Condis", "nombre": "Mossen Cinto Verdaguer, 38", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8108767", "plan": "CAT23", "cadena": "Consum Basic", "nombre": "Mercat de Singuerlin / Avda. Puig Castellar, s/n", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108784", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Major, 57 - 59", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8120481", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Catalunya, 21", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8123068", "plan": "CAT23", "cadena": "Consum Charter", "nombre": "Av Generalitat 23", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2X-4X" },
-        { "codigo": "8124713", "plan": "CAT23", "cadena": "Condis", "nombre": "Carrer Mossen Camil Rosell, 59", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8134941", "plan": "CAT23", "cadena": "Carrefour Express", "nombre": "Rambla Rambla de Sant Jordi 7", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8105203", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Avda. Prat de la Riba, 122", "poblacion": "Bigues i Riells", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105349", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Pi i Maragall, 183", "poblacion": "Caldes de Montbui", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8105352", "plan": "CAT24", "cadena": "Coaliment Saludable", "nombre": "Avinguda Montserrat, 21", "poblacion": "Caldes de Montbui", "medalla": "Bronce", "diaVisita": "2X-4X" },
-        { "codigo": "8105560", "plan": "CAT24", "cadena": "Carrefour Market", "nombre": "Ctra. Granollers a Sant Celoni · F. Mistral", "poblacion": "Cardedeu", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
-        { "codigo": "8105562", "plan": "CAT24", "cadena": "Consum", "nombre": "Pl. Joan Alsina, 24", "poblacion": "Cardedeu", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8105566", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Balmes, 55", "poblacion": "Cardedeu", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8106808", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Avda. Pau Casals, 82-84", "poblacion": "Llinars del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8107162", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Avda. Rabassaires, s/n", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8107170", "plan": "CAT24", "cadena": "Esclat", "nombre": "Nicaragua, s/n (Can Borrell)", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8107241", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Federico Garcia Lorca, 7", "poblacion": "Montmelo", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107243", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Estrella, 5", "poblacion": "Montornes del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8107250", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Major, 54", "poblacion": "Montornes del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8108424", "plan": "CAT24", "cadena": "Condis", "nombre": "Avda. Alfons I, 5-7", "poblacion": "Sant Antoni de Vilamajor", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8108495", "plan": "CAT24", "cadena": "Condis", "nombre": "Psg. dels Esports, 8", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108497", "plan": "CAT24", "cadena": "Esclat", "nombre": "Crta. C-251 · Industria", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8108857", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Cami Vell de Sant Celoni, 13 - 33", "poblacion": "Santa Maria de Palautordera", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8108859", "plan": "CAT24", "cadena": "Condis", "nombre": "Rbl. dels Paisos Catalans, P C1, 3-5-7", "poblacion": "Santa Maria de Palautordera", "medalla": "Bronce", "diaVisita": "1X-3X" },
-        { "codigo": "8108868", "plan": "CAT24", "cadena": "Bon Preu", "nombre": "Casal dels Mogoda, 40", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8108869", "plan": "CAT24", "cadena": "Supeco", "nombre": "Avda. Girona, s/n", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Oro Plus 2", "diaVisita": "1MJ-2MJ-3MJ-4MJ" },
-        { "codigo": "8108871", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Psg. de la Florida, 22", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8108874", "plan": "CAT24", "cadena": "Esclat", "nombre": "Avda. de Tres, 64", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8109859", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Paissos Catalans, s/n", "poblacion": "Vilanova del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8120731", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Jaume I, 67", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8124284", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Can Pantiquet, 38", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8133630", "plan": "CAT24", "cadena": "Condis", "nombre": "C/ Rafael Casanovas 59", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8134283", "plan": "CAT24", "cadena": "Condis Express", "nombre": "Carrer Mare de Deu del Pilar, 49", "poblacion": "Cardedeu", "medalla": "Bronce", "diaVisita": "2X-4X" },
-        { "codigo": "8131135", "plan": "CAT24", "cadena": "Coviran", "nombre": "CL RAMBLA 1", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8103930", "plan": "CAT25", "cadena": "CARREFOUR MINI", "nombre": "Crta. C-17, km 27 C.C. Sant Jordi", "poblacion": "L'Ametlla del Valles", "medalla": "Oro Plus 6", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
-        { "codigo": "8105606", "plan": "CAT25", "cadena": "Consum", "nombre": "Portugal, s/n", "poblacion": "Castellar del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8106262", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Caprabo", "poblacion": "Les Franqueses del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8106312", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Avda. Jacinto Verdaguer, 1", "poblacion": "La Garriga", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8106797", "plan": "CAT25", "cadena": "Condis", "nombre": "Anselmo Clave, 143", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8106798", "plan": "CAT25", "cadena": "Condis", "nombre": "Can Salgot, 2-4", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8106803", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Matarranya, s/n", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8106806", "plan": "CAT25", "cadena": "CondisLife", "nombre": "Avda. Catalunya, 8", "poblacion": "Lliça de Vall", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107164", "plan": "CAT25", "cadena": "CondisLife", "nombre": "Caieta Vincia, 3 - 5", "poblacion": "Mollet del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8107177", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Agricultura, 4 - 8", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8107531", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Avda. Catalunya, s/n", "poblacion": "Palau-solita i Plegamans", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8107699", "plan": "CAT25", "cadena": "Dusa", "nombre": "Avda. Pedra del Diable, 28", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107700", "plan": "CAT25", "cadena": "Dusa", "nombre": "Raval, 2", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107703", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Pau Casals, 16", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8107852", "plan": "CAT25", "cadena": "Condis", "nombre": "Rbl. de Polinya, 11-13", "poblacion": "Polinya", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
-        { "codigo": "8108960", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Psg. de la Torre Roja, 6", "poblacion": "Sentmenat", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8120735", "plan": "CAT25", "cadena": "Consum", "nombre": "C/Rambla Nova 65", "poblacion": "Mollet del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
-        { "codigo": "8122681", "plan": "CAT25", "cadena": "Esclat", "nombre": "Avda. Paisos Catalans, 17", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
-        { "codigo": "8133455", "plan": "CAT25", "cadena": "Supeco", "nombre": "Carrer d´Itàlia, 17", "poblacion": "Castellar del Valles", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
-        { "codigo": "8133674", "plan": "CAT25", "cadena": "Condis", "nombre": "Monistrol 1", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
-        { "codigo": "8133631", "plan": "CAT25", "cadena": "MI ALCAMPO", "nombre": "C/ Gaieta Ventallo 116", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
-        { "codigo": "8135060", "plan": "CAT25", "cadena": "Consum", "nombre": "PZ DEL MERCA S/N", "poblacion": "Castellar del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
-        { "codigo": "8104156", "plan": "PlatinoC4", "cadena": "Carrefour", "nombre": "Ctra. Barcelona, km. 6,7 - C.C. Baricentro", "poblacion": "Barbera del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
-        { "codigo": "8108697", "plan": "PlatinoC4", "cadena": "Alcampo", "nombre": "Autopista C-58 km 12,2", "poblacion": "Sant Quirze del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
-        { "codigo": "8123894", "plan": "PlatinoC4", "cadena": "Carrefour", "nombre": "Avda. Via Augusta, 2", "poblacion": "Sant Cugat del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" }
-    ];
+    /**
+     * Obtiene los clientes desde localStorage si existen, o desde la lista
+     * codificada si es la primera vez. Luego, guarda la lista en localStorage.
+     * @returns {Array} La lista de clientes.
+     */
+    function inicializarClientes() {
+        const DATA_VERSION = '4'; // <-- NUEVO: sube versión para recargar con campos nuevos
+        const versionEnStorage = localStorage.getItem('clientesVersion');
+        const clientesEnStorage = localStorage.getItem('clientesData');
 
+        // Si no hay datos, o la versión ha cambiado, recargamos el array original:
+        if (!clientesEnStorage || versionEnStorage !== DATA_VERSION) {
+            console.log("Recargando lista de clientes y actualizando versión de datos. 💾");
+            const clientesOriginales = [
+                { "codigo": "8103539", "plan": "CAT21", "cadena": "Condis", "nombre": "De Catalunya, 24", "poblacion": "Aiguafreda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8105732", "plan": "CAT21", "cadena": "Condis", "nombre": "Carretera de Granera, 41", "poblacion": "Castellterçol", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8106896", "plan": "CAT21", "cadena": "Esclat", "nombre": "carretera C-17, km 55", "poblacion": "Malla", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8109293", "plan": "CAT21", "cadena": "Consum Charter", "nombre": "carrer de Enric Prat de la Riba, 9", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8109298", "plan": "CAT21", "cadena": "Esclat", "nombre": "Manlleu, 117", "poblacion": "Torello", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8109748", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Arquebisbe Alemany, 20", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8109750", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Torello · Mare de Deu dels Munts", "poblacion": "Vic", "medalla": "Bronce", "diaVisita": "1L-3L" },
+                { "codigo": "8109753", "plan": "CAT21", "cadena": "Supeco", "nombre": "Industria · Torello", "poblacion": "Vic", "medalla": "Oro Plus 2", "diaVisita": "1LV-2LV-3LV-4LV" },
+                { "codigo": "8109754", "plan": "CAT21", "cadena": "CARREFOUR MINI", "nombre": "La Llotja, 6 - Urb. El Sucre", "poblacion": "Vic", "medalla": "Oro Plus 4", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
+                { "codigo": "8109763", "plan": "CAT21", "cadena": "Consum", "nombre": "Josep Maria Sert, s/n", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8109766", "plan": "CAT21", "cadena": "Bon Preu", "nombre": "Generalitat, 44-46", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8109767", "plan": "CAT21", "cadena": "Esclat", "nombre": "Ripoll, 16", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8120832", "plan": "CAT21", "cadena": "CondisLife", "nombre": "Rector Tomas Vila, 27", "poblacion": "Sant Feliu de Codines", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8121085", "plan": "CAT21", "cadena": "Condis", "nombre": "Carretera de Barcelona, 10", "poblacion": "Moia", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8122213", "plan": "CAT21", "cadena": "CondisLife", "nombre": "C. Doctor Junyent, 2-5", "poblacion": "Vic", "medalla": "Bronce", "diaVisita": "2L-4L" },
+                { "codigo": "8124947", "plan": "CAT21", "cadena": "Esclat", "nombre": "Ctra. de Roda s/n", "poblacion": "Manlleu", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8134816", "plan": "CAT21", "cadena": "Coaliment Saludable", "nombre": "del Pare Gallissà  1-3", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8134942", "plan": "CAT21", "cadena": "Coaliment", "nombre": "Rambla Hospital 17", "poblacion": "Vic", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8105044", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Pl. del Pi, s/n", "poblacion": "Bellaterra", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8105762", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Avda. Catalunya, 25", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105763", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Carrer de Santa Marcel·lina, 9", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105767", "plan": "CAT22", "cadena": "Condis", "nombre": "Can Pallares, s/n", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105768", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Avinguda de Canaletes, 11", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105769", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Avda. Catalunya, 66", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105771", "plan": "CAT22", "cadena": "Condis", "nombre": "Carrer de Santa Marcel·lina, 17", "poblacion": "Cerdanyola del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8108192", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Avda. Barbera, 238", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108195", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Rambla de Sabadell, 141", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108196", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Sol i Padris, 100", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108207", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Balmes, 29-31", "poblacion": "Sabadell", "medalla": "Bronce", "diaVisita": "1X-3X" },
+                { "codigo": "8108209", "plan": "CAT22", "cadena": "Condis", "nombre": "Calders, 190 - 192", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108211", "plan": "CAT22", "cadena": "Condis", "nombre": "Irlanda, 2 - Mdo. Merinals", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108213", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Les Valls, 26", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108216", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Ctra. Prats de Lluçanes, 180", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108220", "plan": "CAT22", "cadena": "Consum Charter", "nombre": "Almogavers, 17", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108263", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Passeig dels Almogàvers, 6", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108265", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Industria, 34", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108266", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Manso, 80", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108502", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Rambla del Celler, 115", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108503", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Salvador Espriu · Pau IV", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108508", "plan": "CAT22", "cadena": "Condis", "nombre": "Mercat Torre blanca", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108509", "plan": "CAT22", "cadena": "Consum", "nombre": "Avda. Rius i Taulet, 49", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8108513", "plan": "CAT22", "cadena": "Hermanos Valencia", "nombre": "Avda. Cerdanyola, 6", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108522", "plan": "CAT22", "cadena": "Supercor Express", "nombre": "Lluis Domenech, 2 · Puig i Cadafalch 30", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8120749", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Avda Cerdanyola, 35", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1M-3M" },
+                { "codigo": "8124231", "plan": "CAT22", "cadena": "Esclat", "nombre": "Via Augusta, 103", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8124323", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Carrer Sant Ramon de Penyafort, 3", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8124892", "plan": "CAT22", "cadena": "Consum Charter", "nombre": "Passatge de les Moreres, 1", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8134280", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Plaça de Sant Pere, 5", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8134282", "plan": "CAT22", "cadena": "Condis Express", "nombre": "Carrer de Vallseca, 130", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8135101", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Carrer de Valldoreix, 38", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8135408", "plan": "CAT22", "cadena": "Caprabo", "nombre": "Avinguda de Lluís Companys, 40", "poblacion": "Sant Cugat del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8138210", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "AV  CERDANYOLA, 8-10", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8138747", "plan": "CAT22", "cadena": "CondisLife", "nombre": "Ronda d’Europa,  506", "poblacion": "Sabadell", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8138878", "plan": "CAT22", "cadena": "Sorli Discau", "nombre": "Avinguda del Puig de Rimilia, 14", "poblacion": "Sant Cugat del Valles", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8104054", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Catalunya, 42", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8104059", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Lloreda, 66-72", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8104102", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Avda. Catalunya, 45-47 (Lloreda)", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8104105", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Avda. Italia, 3-5", "poblacion": "Badalona", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8104158", "plan": "CAT23", "cadena": "Condis", "nombre": "Passeig Doctor Moragas, 234", "poblacion": "Barbera del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8104165", "plan": "CAT23", "cadena": "MI ALCAMPO", "nombre": "Josep Armengol, 15", "poblacion": "Barbera del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8107213", "plan": "CAT23", "cadena": "CondisLife", "nombre": "Lleida, 27", "poblacion": "Montcada i Reixac", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8107214", "plan": "CAT23", "cadena": "Condis", "nombre": "Montiu, 12", "poblacion": "Montcada i Reixac", "medalla": "Bronce", "diaVisita": "1M-3M" },
+                { "codigo": "8107219", "plan": "CAT23", "cadena": "Gross Mercat", "nombre": "Pol. Ind. La Ferreria (Avda. La Ferreria)", "poblacion": "Montcada i Reixac", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108090", "plan": "CAT23", "cadena": "Condis", "nombre": "Rambla de Sant Jordi, 113", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108101", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Nostra Senyora dels Àngels, 12", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8108748", "plan": "CAT23", "cadena": "Caprabo", "nombre": "Avda. Generalitat, 44 - 46", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8108749", "plan": "CAT23", "cadena": "Carrefour Market", "nombre": "Avda. Santa Coloma, 24-26", "poblacion": "Santa Coloma de Gramanet", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
+                { "codigo": "8108750", "plan": "CAT23", "cadena": "Carrefour Market", "nombre": "Rambla de Sant Sebastià, 78-80", "poblacion": "Santa Coloma de Gramanet", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
+                { "codigo": "8108760", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Pallaresa, 92", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2L-4L" },
+                { "codigo": "8108761", "plan": "CAT23", "cadena": "Condis", "nombre": "Peru, 39", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108762", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Francesc Macia, 144-146", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108763", "plan": "CAT23", "cadena": "Condis", "nombre": "Passeig Llorenç Serra, 45", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8108764", "plan": "CAT23", "cadena": "Condis", "nombre": "Mossen Cinto Verdaguer, 91", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8108765", "plan": "CAT23", "cadena": "Condis", "nombre": "Mossen Cinto Verdaguer, 38", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8108767", "plan": "CAT23", "cadena": "Consum Basic", "nombre": "Mercat singuerlin", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108784", "plan": "CAT23", "cadena": "Sorli Discau", "nombre": "Major, 57 - 59", "poblacion": "Santa Coloma de Gramanet", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8120481", "plan": "CAT23", "cadena": "Condis", "nombre": "Avda. Catalunya, 21", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8123068", "plan": "CAT23", "cadena": "Consum Charter", "nombre": "Av Generalitat 23", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2X-4X" },
+                { "codigo": "8124713", "plan": "CAT23", "cadena": "Condis", "nombre": "Carrer Mossen Camil Rosell, 59", "poblacion": "Santa Coloma de Gramanet", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8134941", "plan": "CAT23", "cadena": "Carrefour Express", "nombre": "Rambla de Sant Jordi, 7", "poblacion": "Ripollet", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8105203", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Avda. Prat de la Riba, 122", "poblacion": "Bigues i Riells", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105349", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Pi i Margall, 183", "poblacion": "Caldes de Montbui", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8105352", "plan": "CAT24", "cadena": "Coaliment Saludable", "nombre": "Carrer de Montserrat, 21", "poblacion": "Caldes de Montbui", "medalla": "Bronce", "diaVisita": "2X-4X" },
+                { "codigo": "8105560", "plan": "CAT24", "cadena": "Carrefour Market", "nombre": "Ctra. Granollers a Sant Celoni · F. Mistral", "poblacion": "Cardedeu", "medalla": "Oro Plus 3", "diaVisita": "1LXV-2LXV-3LXV-4LXV" },
+                { "codigo": "8105562", "plan": "CAT24", "cadena": "Consum", "nombre": "Pl. Joan Alsina, 24", "poblacion": "Cardedeu", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8105566", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Balmes, 55", "poblacion": "Cardedeu", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8106808", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Avda. Pau Casals, 82-84", "poblacion": "Llinars del Valles", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8107162", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Avda. Rabassaires, s/n", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8107170", "plan": "CAT24", "cadena": "Esclat", "nombre": "Nicaragua, s/n (Can Borrell)", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8107241", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Federico Garcia Lorca, 7", "poblacion": "Montmelo", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8107243", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Estrella, 5", "poblacion": "Montornes del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8107250", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Major, 54", "poblacion": "Montornes del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8108424", "plan": "CAT24", "cadena": "Condis", "nombre": "Avda. Alfons I, 5-7", "poblacion": "Sant Antoni de Vilamajor", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8108495", "plan": "CAT24", "cadena": "Condis", "nombre": "Passeig dels Esports, 8", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108497", "plan": "CAT24", "cadena": "Esclat", "nombre": "Crta. C-251 · Industria", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8108857", "plan": "CAT24", "cadena": "Caprabo", "nombre": "Cami Vell de Sant Celoni, 13 - 33", "poblacion": "Santa Maria de Palautordera", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8108859", "plan": "CAT24", "cadena": "Condis", "nombre": "Rambla dels Països Catalans, 3", "poblacion": "Santa Maria de Palautordera", "medalla": "Bronce", "diaVisita": "1X-3X" },
+                { "codigo": "8108868", "plan": "CAT24", "cadena": "Bon Preu", "nombre": "Casal dels Mogoda, 40", "poblacion": "Santa Perpetua de la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8108869", "plan": "CAT24", "cadena": "Supeco", "nombre": "Avda. Girona, s/n", "poblacion": "Santa Perpetua la Mogoda", "medalla": "Oro Plus 2", "diaVisita": "1MJ-2MJ-3MJ-4MJ" },
+                { "codigo": "8108871", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Passeig de la Florida, 22", "poblacion": "Santa Perpetua la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8108874", "plan": "CAT24", "cadena": "Esclat", "nombre": "Tres, 64", "poblacion": "Santa Perpetua la Mogoda", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8109859", "plan": "CAT24", "cadena": "Sorli Discau", "nombre": "Plaça dels Països Catalans", "poblacion": "Vilanova del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8120731", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Jaume I, 67", "poblacion": "Sant Celoni", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8124284", "plan": "CAT24", "cadena": "CondisLife", "nombre": "Can Pantiquet, 38", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8133630", "plan": "CAT24", "cadena": "Condis", "nombre": "Rafael Casanova, 59", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8134283", "plan": "CAT24", "cadena": "Condis Express", "nombre": "Carrer Mare de Deu del Pilar, 49", "poblacion": "Cardedeu", "medalla": "Bronce", "diaVisita": "2X-4X" },
+                { "codigo": "8131135", "plan": "CAT24", "cadena": "Coviran", "nombre": "Rambla, 1", "poblacion": "Santa Perpetua la Mogoda", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8103930", "plan": "CAT25", "cadena": "CARREFOUR MINI", "nombre": " C.C. Sant Jordi", "poblacion": "L'Ametlla del Valles", "medalla": "Oro Plus 6", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
+                { "codigo": "8105606", "plan": "CAT25", "cadena": "Consum", "nombre": "Portugal, s/n", "poblacion": "Castellar del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8106262", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Carretera de Ribes, 2", "poblacion": "Les Franqueses del Valles", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8106312", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Avinguda Jacint Verdaguer, 1", "poblacion": "La Garriga", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8106797", "plan": "CAT25", "cadena": "Condis", "nombre": "Carrer Anselm Clavé, 143", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8106798", "plan": "CAT25", "cadena": "Condis", "nombre": "Can Salgot, 2-4", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8106803", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Matarranya, s/n", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8106806", "plan": "CAT25", "cadena": "CondisLife", "nombre": "Avda. Catalunya, 8", "poblacion": "Lliça de Vall", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo":  "8107164", "plan": "CAT25", "cadena": "CondisLife", "nombre": "Carrer de Gaieta Vinzia, 3", "poblacion": "Mollet del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8107177", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Agricultura, 4 - 8", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8107531", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Avda. Catalunya, s/n", "poblacion": "Palau-solita i Plegamans", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8107699", "plan": "CAT25", "cadena": "Dusa", "nombre": "Avda. Pedra del Diable, 28", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8107700", "plan": "CAT25", "cadena": "Dusa", "nombre": "Raval, 2", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8107703", "plan": "CAT25", "cadena": "Sorli Discau", "nombre": "Pau Casals, 16", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8107852", "plan": "CAT25", "cadena": "Condis", "nombre": "Rambla de Polinyà, 11-13", "poblacion": "Polinya", "medalla": "Plata", "diaVisita": "1L-2L-3L-4L" },
+                { "codigo": "8108960", "plan": "CAT25", "cadena": "Caprabo", "nombre": "Passeig de la Torre Roja 6", "poblacion": "Sentmenat", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8120735", "plan": "CAT25", "cadena": "Consum", "nombre": "Rambla Nova 65", "poblacion": "Mollet del Valles", "medalla": "Bronce", "diaVisita": "1J-3J" },
+                { "codigo": "8122681", "plan": "CAT25", "cadena": "Esclat", "nombre": "Avda. Paisos Catalans, 17", "poblacion": "Lliça d'Amunt", "medalla": "Plata", "diaVisita": "1M-2M-3M-4M" },
+                { "codigo": "8133455", "plan": "CAT25", "cadena": "Supeco", "nombre": "Carrer d´Itàlia, 17", "poblacion": "Castellar del Valles", "medalla": "Plata", "diaVisita": "1X-2X-3X-4X" },
+                { "codigo": "8133674", "plan": "CAT25", "cadena": "Condis", "nombre": "Monistrol 1", "poblacion": "Parets del Valles", "medalla": "Plata", "diaVisita": "1V-2V-3V-4V" },
+                { "codigo": "8133631", "plan": "CAT25", "cadena": "MI ALCAMPO", "nombre": "C/ Gaieta Ventallo 116", "poblacion": "Mollet del Valles", "medalla": "Plata", "diaVisita": "1J-2J-3J-4J" },
+                { "codigo": "8135060", "plan": "CAT25", "cadena": "Consum", "nombre": "Plaça del Mercat s/n", "poblacion": "Castellar del Valles", "medalla": "Bronce", "diaVisita": "2J-4J" },
+                { "codigo": "8104156", "plan": "PlatinoC4", "cadena": "Carrefour", "nombre": "N-150, km 6, Barcelona", "poblacion": "Barbera del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
+                { "codigo": "8108697", "plan": "PlatinoC4", "cadena": "Alcampo", "nombre": "passeig de la Bòbila", "poblacion": "Sant Quirze del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" },
+                { "codigo": "8123894", "plan": "PlatinoC4", "cadena": "Carrefour", "nombre": "Avda. Via Augusta, 2", "poblacion": "Sant Cugat del Valles", "medalla": "Platino", "diaVisita": "1LMXJVS-2LMXJVS-3LMXJVS-4LMXJVS" }
+            ].map(c => ({ telefono: '', encargado1: '', encargado2: '', ...c })); // NUEVO: añadimos campos
+
+            // Guardamos la lista en formato JSON en localStorage
+            localStorage.setItem('clientesData', JSON.stringify(clientesOriginales));
+            localStorage.setItem('clientesVersion', DATA_VERSION);
+            return clientesOriginales; // <-- CORRECCIÓN: Devolver la lista nueva
+        }
+
+        // Si la versión coincide, usamos lo ya almacenado:
+        console.log("Clientes cargados desde localStorage (versión " + versionEnStorage + "). ✅");
+        const lista = JSON.parse(clientesEnStorage);
+        return ensureExtraFields(lista); // NUEVO: por si ya existían sin campos
+    }
+
+    /* NUEVO: asegura que todos los clientes tienen los campos añadidos */
+    function ensureExtraFields(arr) {
+        return arr.map(c => ({
+            telefono: c.telefono ?? '',
+            encargado1: c.encargado1 ?? '',
+            encargado2: c.encargado2 ?? '',
+            ...c
+        }));
+    }
+
+    // --- LLAMADA A LA FUNCIÓN DE INICIALIZACIÓN ---
+    const clientes = inicializarClientes();
+
+    // --- CONSTANTES Y CONFIGURACIÓN ---
     const FRANQUICIA_PDV_CODES = new Set([
         "8103539", "8105732", "8109293", "8134816", "8108209", "8108220",
         "8120749", "8124892", "8104059", "8104165", "8107214", "8108090",
         "8108761", "8108763", "8108764", "8108765", "8120481", "8123068",
-        "8124713", "8134941", "8107243", "8134283", "8131135", "8133631"
+        "8124713", "8134941", "8107243", "8134283", "8131135", "8133631","8133674"
     ]);
 
     const MEDALLA_EMOJIS = {
@@ -159,7 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: '6127585', nombre: 'Delantales' }
     ];
 
-    const selectedClients = new Set();
+    /* NUEVO */
+    const PHONE_ICON = '📞';
+    const WA_ICON = '💬';
+
+    let selectedClients = new Set();
     let currentFilteredClients = [];
     let activeDayFilter = null;
     let currentView = 'filters';
@@ -168,12 +212,41 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     const markersLayer = L.layerGroup();
 
-    const geocodeCache = new Map(JSON.parse(sessionStorage.getItem('geocodeCache') || '[]'));
+    // ---------- CACHÉ DE GEOCODIFICACIÓN PERSISTENTE ----------
+    const GEO_VERSION = '1'; // súbelo si cambias el formato
+    const rawCache = localStorage.getItem('geocodeCache');
+    const storedGeoVersion = localStorage.getItem('geocodeCacheVersion');
+    // Mapea: address -> {lat: number, lon: number}
+    const geocodeCache = new Map(
+        rawCache && storedGeoVersion === GEO_VERSION ? JSON.parse(rawCache) : []
+    );
 
-    function saveCache() {
-        sessionStorage.setItem('geocodeCache', JSON.stringify(Array.from(geocodeCache.entries())));
+    // Migración desde sessionStorage si existía
+    if (!rawCache) {
+        const oldSession = sessionStorage.getItem('geocodeCache');
+        if (oldSession) {
+            try {
+                const arr = JSON.parse(oldSession);
+                arr.forEach(([addr, coords]) => {
+                    if (coords) geocodeCache.set(addr, coords);
+                });
+                saveCache();
+                console.log('Migrado geocodeCache desde sessionStorage a localStorage ✅');
+            } catch (e) {
+                console.warn('Error migrando caché antigua:', e);
+            }
+        }
     }
 
+    function saveCache() {
+        localStorage.setItem('geocodeCache', JSON.stringify(Array.from(geocodeCache.entries())));
+        localStorage.setItem('geocodeCacheVersion', GEO_VERSION);
+    }
+
+    // Guardar justo antes de cerrar pestaña
+    window.addEventListener('beforeunload', saveCache);
+
+    // ---------- ELEMENTOS DOM ----------
     const mainTitle = document.getElementById('main-title');
     const toggleViewBtn = document.getElementById('toggle-view-btn');
     const filterView = document.getElementById('filter-view');
@@ -216,6 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalGiftsList = document.getElementById('modal-gifts-list');
     const copyGiftsBtn = document.getElementById('copy-gifts-btn');
 
+    // --- NUEVO: botón para copiar direcciones con error (se creará dinámicamente) ---
+    let copyFailedBtn = null;
+
     function getMedalEmojis(cliente) {
         const medallaBase = cliente.medalla || 'default';
         let medallaEmoji = '';
@@ -237,136 +313,139 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${medallaEmoji}${medallaFranquicia}`;
     }
 
-    function mostrarClientes(clientesAMostrar) {
-    if (!clientList) return;
-    clientList.innerHTML = '';
-    if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
-    
-    clientesAMostrar.forEach(cliente => {
-        const isSelected = selectedClients.has(cliente.codigo);
-        const line = document.createElement('div');
-        line.className = 'client-line';
-        line.classList.toggle('selected', isSelected);
-        const medallasFinales = getMedalEmojis(cliente);
-        
-        line.innerHTML = `
-            <label class="checkbox-container" for="check-${cliente.codigo}">
-                <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
-            </label>
-            <div class="client-info">
-                <strong>${cliente.cadena} (${cliente.codigo})</strong>
-                <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
-            </div>
-            <span class="client-medalla">${medallasFinales}</span>
-        `;
+    /* NUEVO: utilidades teléfono */
+    function limpiarTelefono(str) {
+        return (str || '').replace(/\s+/g, '');
+    }
+    function soloNumeros(str) {
+        return (str || '').replace(/\D/g, '');
+    }
 
-        line.addEventListener('click', (e) => {
-            const checkbox = line.querySelector('input[type="checkbox"]');
-            if (e.target.nodeName !== 'INPUT') {
-                checkbox.checked = !checkbox.checked;
+    function mostrarClientes(clientesAMostrar) {
+        if (!clientList) return;
+        clientList.innerHTML = '';
+        if (noResults) noResults.classList.toggle('hidden', clientesAMostrar.length > 0);
+        
+        clientesAMostrar.forEach(cliente => {
+            const isSelected = selectedClients.has(cliente.codigo);
+            const line = document.createElement('div');
+            line.className = 'client-line';
+            line.classList.toggle('selected', isSelected);
+            const medallasFinales = getMedalEmojis(cliente);
+
+            /* NUEVO: preparar teléfonos/encargados */
+            const tel = limpiarTelefono(cliente.telefono);
+            const telNums = soloNumeros(cliente.telefono);
+            const linksTelWa = tel ? `
+                <a href="tel:${tel}" title="Llamar">${PHONE_ICON}</a>
+                <a href="https://wa.me/${telNums}" target="_blank" title="WhatsApp">${WA_ICON}</a>
+            ` : '';
+            const encargadosLine = cliente.encargado1 || cliente.encargado2
+                ? `Enc.: ${cliente.encargado1 || '-'}${cliente.encargado2 ? ' / Sec.: ' + cliente.encargado2 : ''}`
+                : '';
+
+            line.innerHTML = `
+                <label class="checkbox-container" for="check-${cliente.codigo}">
+                    <input type="checkbox" id="check-${cliente.codigo}" data-codigo="${cliente.codigo}" ${isSelected ? 'checked' : ''}>
+                </label>
+                <div class="client-info">
+                    <strong>${cliente.cadena} (${cliente.codigo})</strong>
+                    <span class="client-address">${cliente.nombre}, ${cliente.poblacion}</span>
+                    <span class="client-phones">${linksTelWa}</span>
+                    <span class="client-people">${encargadosLine}</span>
+                </div>
+                <span class="client-medalla">${medallasFinales}</span>
+            `;
+
+            line.addEventListener('click', (e) => {
+                const checkbox = line.querySelector('input[type="checkbox"]');
+                if (e.target.nodeName !== 'INPUT' && e.target.tagName !== 'A') {
+                    checkbox.checked = !checkbox.checked;
+                }
+                const codigo = checkbox.dataset.codigo;
+                checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
+                updateSelectionUI();
+            });
+
+            clientList.appendChild(line);
+        });
+        currentFilteredClients = clientesAMostrar;
+        updateSelectionUI();
+    }
+
+    function aplicarFiltros() {
+        const searchTerm = searchBox.value.toLowerCase().trim();
+
+        const potentialMatches = searchTerm ? clientes.filter(cliente =>
+            `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase().includes(searchTerm)
+        ) : [];
+
+        if (potentialMatches.length !== 1) {
+            if (rutaFilter.classList.contains('highlight-select')) {
+                rutaFilter.value = '';
             }
-            const codigo = checkbox.dataset.codigo;
-            checkbox.checked ? selectedClients.add(codigo) : selectedClients.delete(codigo);
-            updateSelectionUI();
+            if (medallaFilter.classList.contains('highlight-select')) {
+                medallaFilter.value = '';
+            }
+        }
+        
+        if (searchResultInfo) searchResultInfo.classList.add('hidden');
+        if (rutaFilter) rutaFilter.classList.remove('highlight-select');
+        if (medallaFilter) medallaFilter.classList.remove('highlight-select');
+        if (diasFilterContainer) {
+            diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
+        }
+
+        const rutaSeleccionada = rutaFilter.value;
+        const cadenaSeleccionada = cadenaFilter.value;
+        const medallaSeleccionada = medallaFilter.value;
+        const franquiciaSeleccionada = franquiciaFilter.value;
+        const sortOption = sortSelect.value;
+
+        let clientesFiltrados = clientes.filter(cliente => {
+            const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
+            const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
+            
+            const matchesFranquicia = !franquiciaSeleccionada || (franquiciaSeleccionada === 'si' && esFranquicia) || (franquiciaSeleccionada === 'no' && !esFranquicia);
+            const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
+            const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
+            const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
+            const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
+            const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
+            
+            return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay && matchesFranquicia;
         });
 
-        clientList.appendChild(line);
-    });
-    currentFilteredClients = clientesAMostrar;
-    updateSelectionUI();
-}
+        if (potentialMatches.length === 1) {
+            const clienteUnico = potentialMatches[0];
+            if (rutaFilter.value === '') rutaFilter.value = clienteUnico.plan;
+            if (medallaFilter.value === '') medallaFilter.value = clienteUnico.medalla;
 
-/**
- * Applies all selected filters to the client list.
- * It includes an improved "smart search" that auto-populates filters for a unique
- * search result but allows the user to override it without getting stuck.
- */
-function aplicarFiltros() {
-    const searchTerm = searchBox.value.toLowerCase().trim();
-
-    // --- INICIO DE LA CORRECCIÓN ---
-    // 1. Identifica si la nueva búsqueda es general (no para un cliente único).
-    const potentialMatches = searchTerm ? clientes.filter(cliente =>
-        `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase().includes(searchTerm)
-    ) : [];
-
-    // 2. Si la búsqueda es general, limpia los filtros que se auto-rellenaron previamente.
-    // Esto soluciona el problema de que los valores se queden "atascados".
-    if (potentialMatches.length !== 1) {
-        if (rutaFilter.classList.contains('highlight-select')) {
-            rutaFilter.value = '';
+            if (rutaFilter.value === clienteUnico.plan) rutaFilter.classList.add('highlight-select');
+            if (medallaFilter.value === clienteUnico.medalla) medallaFilter.classList.add('highlight-select');
+            
+            const medallasEmoji = getMedalEmojis(clienteUnico);
+            if (searchResultInfo) {
+                searchResultInfo.innerHTML = `
+                    <span title="Ruta">🗺️ <strong>${clienteUnico.plan}</strong></span>
+                    <span class="info-separator">|</span>
+                    <span title="Medalla">${medallasEmoji} <strong>${clienteUnico.medalla}</strong></span>
+                    <span class="info-separator">|</span>
+                    <span title="Días de Visita">📅 <strong>${clienteUnico.diaVisita}</strong></span>
+                `;
+                searchResultInfo.classList.remove('hidden');
+            }
         }
-        if (medallaFilter.classList.contains('highlight-select')) {
-            medallaFilter.value = '';
-        }
-    }
-    // --- FIN DE LA CORRECCIÓN ---
 
-    // 3. Resetea todos los indicadores visuales para la nueva renderización.
-    if (searchResultInfo) searchResultInfo.classList.add('hidden');
-    if (rutaFilter) rutaFilter.classList.remove('highlight-select');
-    if (medallaFilter) medallaFilter.classList.remove('highlight-select');
-    if (diasFilterContainer) {
-        diasFilterContainer.querySelectorAll('.dia-btn').forEach(btn => btn.classList.remove('highlight'));
-    }
-
-    // 4. Obtiene los valores finales de los filtros (ya sea los que acaba de limpiar o los que el usuario ha puesto).
-    const rutaSeleccionada = rutaFilter.value;
-    const cadenaSeleccionada = cadenaFilter.value;
-    const medallaSeleccionada = medallaFilter.value;
-    const franquiciaSeleccionada = franquiciaFilter.value;
-    const sortOption = sortSelect.value;
-
-    // 5. Filtra la lista de clientes con todos los criterios.
-    let clientesFiltrados = clientes.filter(cliente => {
-        const searchableString = `${cliente.codigo} ${cliente.nombre} ${cliente.poblacion} ${cliente.plan} ${cliente.cadena} ${cliente.medalla}`.toLowerCase();
-        const esFranquicia = FRANQUICIA_PDV_CODES.has(cliente.codigo);
+        const sortFunctions = {
+            'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
+            'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
+            'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
+        };
+        clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
         
-        const matchesFranquicia = !franquiciaSeleccionada || (franquiciaSeleccionada === 'si' && esFranquicia) || (franquiciaSeleccionada === 'no' && !esFranquicia);
-        const matchesSearch = !searchTerm || searchableString.includes(searchTerm);
-        const matchesRuta = !rutaSeleccionada || cliente.plan === rutaSeleccionada;
-        const matchesCadena = !cadenaSeleccionada || cliente.cadena === cadenaSeleccionada;
-        const matchesMedalla = !medallaSeleccionada || cliente.medalla === medallaSeleccionada;
-        const matchesDay = !activeDayFilter || cliente.diaVisita.includes(activeDayFilter);
-        
-        return matchesSearch && matchesRuta && matchesCadena && matchesMedalla && matchesDay && matchesFranquicia;
-    });
-
-    // 6. Si el resultado final es un cliente único, muestra la información y resalta los filtros.
-    if (potentialMatches.length === 1) {
-        const clienteUnico = potentialMatches[0];
-        // Asigna los valores a los filtros solo si están vacíos.
-        if (rutaFilter.value === '') rutaFilter.value = clienteUnico.plan;
-        if (medallaFilter.value === '') medallaFilter.value = clienteUnico.medalla;
-
-        // Si los valores actuales coinciden con el cliente único, se resalta.
-        if (rutaFilter.value === clienteUnico.plan) rutaFilter.classList.add('highlight-select');
-        if (medallaFilter.value === clienteUnico.medalla) medallaFilter.classList.add('highlight-select');
-        
-        // Muestra la barra de información.
-        const medallasEmoji = getMedalEmojis(clienteUnico);
-        if (searchResultInfo) {
-            searchResultInfo.innerHTML = `
-                <span title="Ruta">🗺️ <strong>${clienteUnico.plan}</strong></span>
-                <span class="info-separator">|</span>
-                <span title="Medalla">${medallasEmoji} <strong>${clienteUnico.medalla}</strong></span>
-                <span class="info-separator">|</span>
-                <span title="Días de Visita">📅 <strong>${clienteUnico.diaVisita}</strong></span>
-            `;
-            searchResultInfo.classList.remove('hidden');
-        }
+        mostrarClientes(clientesFiltrados);
     }
-
-    // 7. Ordena y muestra los clientes filtrados.
-    const sortFunctions = {
-        'nombre-asc': (a, b) => a.nombre.localeCompare(b.nombre),
-        'cadena-asc': (a, b) => a.cadena.localeCompare(b.cadena),
-        'codigo-asc': (a, b) => a.codigo.localeCompare(b.codigo),
-    };
-    clientesFiltrados.sort(sortFunctions[sortOption] || sortFunctions['codigo-asc']);
-    
-    mostrarClientes(clientesFiltrados);
-}
 
     function getCleanAddressForMap(cliente) {
         let address = cliente.nombre;
@@ -509,11 +588,17 @@ function aplicarFiltros() {
     
     function generarUrlDeNavegacion(clients) {
         if (clients.length === 0) return '#';
-        const baseUrl = 'https://www.google.com/maps/dir/';
-        const addresses = clients.map(client =>
-            encodeURIComponent(getCleanAddressForMap(client))
-        ).join('/');
-        return baseUrl + addresses;
+        const baseUrl = 'https://www.google.com/maps/dir/?api=1';
+        const origin = 'Current+Location';
+    
+        const waypoints = clients.slice(0, -1).map(client => encodeURIComponent(getCleanAddressForMap(client))).join('|');
+        const destination = encodeURIComponent(getCleanAddressForMap(clients[clients.length - 1]));
+    
+        if (clients.length > 1) {
+            return `${baseUrl}&origin=${origin}&destination=${destination}&waypoints=${waypoints}&travelmode=driving`;
+        } else {
+            return `${baseUrl}&destination=${destination}&travelmode=driving`;
+        }
     }
 
     function aplicarFiltrosDesdeURL() {
@@ -545,7 +630,7 @@ function aplicarFiltros() {
         if (modalClientList) modalClientList.innerHTML = '';
         clientsToShow.forEach(cliente => {
             const clientElement = document.createElement('p');
-            clientElement.textContent = `${cliente.codigo} ${cliente.cadena} (${cliente.medalla}) - ${cliente.nombre}, ${cliente.poblacion}`;
+            clientElement.textContent = `${cliente.codigo} ${cliente.cadena} (${cliente.medalla}) - ${cliente.nombre}, ${cliente.poblacion} | Tel: ${cliente.telefono || '-'} | Enc: ${cliente.encargado1 || ''} ${cliente.encargado2 ? '/ ' + cliente.encargado2 : ''}`;
             if (modalClientList) modalClientList.appendChild(clientElement);
         });
         if (modalClientCount) modalClientCount.textContent = `Total: ${clientsToShow.length} clientes seleccionados`;
@@ -644,6 +729,7 @@ function aplicarFiltros() {
     }
 
     async function geocodeAddress(address) {
+        // Evitamos peticiones si ya está cacheado
         if (geocodeCache.has(address)) {
             return geocodeCache.get(address);
         }
@@ -654,15 +740,16 @@ function aplicarFiltros() {
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                geocodeCache.set(address, null); 
-                saveCache();
                 return null;
             }
             const data = await response.json();
             const coords = (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null;
             
-            geocodeCache.set(address, coords);
-            saveCache();
+            // Solo cacheamos si hay coords válidas
+            if (coords) {
+                geocodeCache.set(address, coords);
+                saveCache();
+            }
             return coords;
         } catch (error) {
             console.error("Error de geocodificación:", error);
@@ -677,6 +764,22 @@ function aplicarFiltros() {
         if (mapModal) mapModal.classList.remove('hidden');
         if (routeDetails) routeDetails.innerHTML = '🌍 Preparando mapa...';
 
+        // Creamos botón para copiar errores si no existe
+        if (!copyFailedBtn && routeDetails) {
+            copyFailedBtn = document.createElement('button');
+            copyFailedBtn.id = 'copy-failed-btn';
+            copyFailedBtn.textContent = 'Copiar direcciones con error';
+            copyFailedBtn.style.display = 'none';
+            copyFailedBtn.className = 'btn btn-warning btn-small';
+            copyFailedBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(failedAddresses.join('\n')).then(() => {
+                    copyFailedBtn.textContent = '¡Copiadas!';
+                    setTimeout(() => copyFailedBtn.textContent = 'Copiar direcciones con error', 1500);
+                });
+            });
+            routeDetails.parentElement.appendChild(copyFailedBtn);
+        }
+
         if (!map) {
             map = L.map('map-container').setView([41.5, 2.0], 9);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -690,6 +793,7 @@ function aplicarFiltros() {
         const allMarkers = [];
         const uncachedClients = [];
         let foundCount = 0;
+        const failedAddresses = [];
 
         if (routeDetails) routeDetails.innerHTML = '🔍 Comprobando caché de ubicaciones...';
         for (const cliente of selectedClientsData) {
@@ -701,6 +805,9 @@ function aplicarFiltros() {
                     const marker = L.marker([coords.lat, coords.lon]).bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
                     allMarkers.push(marker);
                     markersLayer.addLayer(marker);
+                } else {
+                    // No cacheamos null, así que no deberíamos entrar aquí, pero por si acaso
+                    uncachedClients.push(cliente);
                 }
             } else {
                 uncachedClients.push(cliente);
@@ -713,6 +820,7 @@ function aplicarFiltros() {
 
         if (uncachedClients.length === 0) {
             if (routeDetails) routeDetails.innerHTML = `✅ Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones en la caché.`;
+            if (copyFailedBtn) copyFailedBtn.style.display = 'none';
             return;
         }
 
@@ -727,6 +835,8 @@ function aplicarFiltros() {
                 const marker = L.marker([coords.lat, coords.lon]).bindPopup(`<b>${cliente.cadena}</b><br>${cliente.nombre}, ${cliente.poblacion}`);
                 allMarkers.push(marker);
                 markersLayer.addLayer(marker);
+            } else {
+                failedAddresses.push(`${cliente.codigo} | ${address}`);
             }
             
             if (allMarkers.length > 0) {
@@ -738,7 +848,17 @@ function aplicarFiltros() {
             }
         }
         
-        if (routeDetails) routeDetails.innerHTML = `✅ Proceso finalizado. Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
+        let resultHTML = `✅ Proceso finalizado. Se encontraron ${foundCount} de ${selectedClientsData.length} ubicaciones.`;
+        if (failedAddresses.length > 0) {
+            resultHTML += `<br>⚠️ No se pudieron geocodificar ${failedAddresses.length} direcciones:`;
+            resultHTML += `<ul>${failedAddresses.map(a => `<li>${a}</li>`).join('')}</ul>`;
+            console.warn('Direcciones no geocodificadas:', failedAddresses);
+            if (copyFailedBtn) copyFailedBtn.style.display = 'inline-block';
+        } else {
+            if (copyFailedBtn) copyFailedBtn.style.display = 'none';
+        }
+
+        if (routeDetails) routeDetails.innerHTML = resultHTML;
     }
 
     function closeMapModal() {
@@ -756,7 +876,7 @@ function aplicarFiltros() {
             const doc = new jsPDF();
             doc.setFontSize(16).text(filename, 14, 22);
             doc.setFontSize(10);
-            const lineas = clientsToExport.map(c => `${c.codigo} | ${c.cadena} | ${c.nombre}, ${c.poblacion}`);
+            const lineas = clientsToExport.map(c => `${c.codigo} | ${c.cadena} | ${c.nombre}, ${c.poblacion} | Tel:${c.telefono || '-'} | Enc:${c.encargado1 || ''} ${c.encargado2 ? '/ ' + c.encargado2 : ''}`);
             doc.text(lineas, 14, 32);
             doc.save(`${filename}.pdf`);
         } else if (type === 'excel') {
@@ -767,14 +887,18 @@ function aplicarFiltros() {
                 'Nombre': c.nombre, 
                 'Población': c.poblacion, 
                 'Medalla': c.medalla, 
-                'Días Visita': c.diaVisita
+                'Días Visita': c.diaVisita,
+                /* NUEVO */
+                'Teléfono': c.telefono,
+                'Encargado 1': c.encargado1,
+                'Encargado 2': c.encargado2
             }));
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
             XLSX.writeFile(workbook, `${filename}.xlsx`);
         } else if (type === 'copy') {
-            const textToCopy = clientsToExport.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}`).join('\n');
+            const textToCopy = clientsToExport.map(c => `${c.codigo}\t${c.cadena}\t${c.nombre}\t${c.poblacion}\t${c.telefono || ''}\t${c.encargado1 || ''}\t${c.encargado2 || ''}`).join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 if (copySelectionBtn) {
                     const originalContent = copySelectionBtn.innerHTML;
@@ -858,9 +982,12 @@ function aplicarFiltros() {
                 rutaCard.innerHTML = `<h3>Ruta: ${plan}</h3><ul>${
                     clientesDelPlan.sort((a,b) => a.codigo.localeCompare(b.codigo)).map(cliente => {
                         const medallasFinales = getMedalEmojis(cliente);
+                        const encargadosLine = cliente.encargado1 || cliente.encargado2
+                            ? `Enc.: ${cliente.encargado1 || '-'}${cliente.encargado2 ? ' / Sec.: ' + cliente.encargado2 : ''}`
+                            : '';
                         return `<li>
                             <span class="client-code">${cliente.codigo}</span>
-                            <div class="client-details"><strong>${cliente.cadena}</strong> - ${cliente.nombre}, <em>${cliente.poblacion}</em></div>
+                            <div class="client-details"><strong>${cliente.cadena}</strong> - ${cliente.nombre}, <em>${cliente.poblacion}</em><br><small>${encargadosLine}</small></div>
                             <span class="client-medalla">${medallasFinales}</span>
                         </li>`;
                     }).join('')
